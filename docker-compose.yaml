@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: social-network-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: social_network_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - social-network-backend
+
+volumes:
+  db-data:
+
+networks:
+  social-network-backend:
+    driver: bridge
