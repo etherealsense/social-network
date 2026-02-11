@@ -11,15 +11,15 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type handler struct {
+type Handler struct {
 	service Service
 }
 
-func NewHandler(service Service) *handler {
-	return &handler{service: service}
+func NewHandler(service Service) *Handler {
+	return &Handler{service: service}
 }
 
-func (h *handler) CreateComment(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
 
 	postIDStr := chi.URLParam(r, "post_id")
@@ -46,7 +46,7 @@ func (h *handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	json.Write(w, http.StatusCreated, comment)
 }
 
-func (h *handler) GetComment(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetComment(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -68,7 +68,7 @@ func (h *handler) GetComment(w http.ResponseWriter, r *http.Request) {
 	json.Write(w, http.StatusOK, comment)
 }
 
-func (h *handler) UpdateComment(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
 
 	idStr := chi.URLParam(r, "id")
@@ -102,7 +102,7 @@ func (h *handler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	json.Write(w, http.StatusOK, comment)
 }
 
-func (h *handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
 
 	idStr := chi.URLParam(r, "id")
@@ -129,7 +129,7 @@ func (h *handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *handler) ListCommentsByPostID(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ListCommentsByPostID(w http.ResponseWriter, r *http.Request) {
 	postIDStr := chi.URLParam(r, "post_id")
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {

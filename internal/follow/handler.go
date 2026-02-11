@@ -11,15 +11,15 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type handler struct {
+type Handler struct {
 	service Service
 }
 
-func NewHandler(service Service) *handler {
-	return &handler{service: service}
+func NewHandler(service Service) *Handler {
+	return &Handler{service: service}
 }
 
-func (h *handler) FollowUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
 
 	followingIDStr := chi.URLParam(r, "user_id")
@@ -46,7 +46,7 @@ func (h *handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 	json.Write(w, http.StatusCreated, follow)
 }
 
-func (h *handler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
 
 	followingIDStr := chi.URLParam(r, "user_id")
@@ -71,7 +71,7 @@ func (h *handler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *handler) ListFollowers(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ListFollowers(w http.ResponseWriter, r *http.Request) {
 	userIDStr := chi.URLParam(r, "user_id")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
@@ -91,7 +91,7 @@ func (h *handler) ListFollowers(w http.ResponseWriter, r *http.Request) {
 	json.Write(w, http.StatusOK, followers)
 }
 
-func (h *handler) ListFollowing(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ListFollowing(w http.ResponseWriter, r *http.Request) {
 	userIDStr := chi.URLParam(r, "user_id")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {

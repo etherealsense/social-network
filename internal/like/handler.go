@@ -11,15 +11,15 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type handler struct {
+type Handler struct {
 	service Service
 }
 
-func NewHandler(service Service) *handler {
-	return &handler{service: service}
+func NewHandler(service Service) *Handler {
+	return &Handler{service: service}
 }
 
-func (h *handler) LikePost(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) LikePost(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
 
 	postIDStr := chi.URLParam(r, "post_id")
@@ -46,7 +46,7 @@ func (h *handler) LikePost(w http.ResponseWriter, r *http.Request) {
 	json.Write(w, http.StatusCreated, l)
 }
 
-func (h *handler) UnlikePost(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UnlikePost(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
 
 	postIDStr := chi.URLParam(r, "post_id")
@@ -71,7 +71,7 @@ func (h *handler) UnlikePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *handler) ListLikesByPostID(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ListLikesByPostID(w http.ResponseWriter, r *http.Request) {
 	postIDStr := chi.URLParam(r, "post_id")
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {

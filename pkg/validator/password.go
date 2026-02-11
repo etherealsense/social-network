@@ -2,7 +2,6 @@ package validator
 
 import (
 	"errors"
-	"strings"
 )
 
 var (
@@ -12,8 +11,6 @@ var (
 )
 
 func ValidatePassword(password string) error {
-	password = strings.TrimSpace(password)
-
 	if password == "" {
 		return ErrPasswordEmpty
 	}

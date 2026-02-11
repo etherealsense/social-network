@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/etherealsense/social-network/pkg/json"
@@ -81,7 +82,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.service.Login(r.Context(), req)
 	if err != nil {
-		if err == ErrInvalidCredentials {
+		if errors.Is(err, ErrInvalidCredentials) {
 			http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		} else {
 			http.Error(w, "failed to login", http.StatusInternalServerError)

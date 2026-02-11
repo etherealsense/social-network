@@ -11,15 +11,15 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type handler struct {
+type Handler struct {
 	service Service
 }
 
-func NewHandler(service Service) *handler {
-	return &handler{service: service}
+func NewHandler(service Service) *Handler {
+	return &Handler{service: service}
 }
 
-func (h *handler) CreatePost(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
 
 	var req CreatePostRequest
@@ -39,7 +39,7 @@ func (h *handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	json.Write(w, http.StatusCreated, post)
 }
 
-func (h *handler) GetPost(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetPost(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -61,7 +61,7 @@ func (h *handler) GetPost(w http.ResponseWriter, r *http.Request) {
 	json.Write(w, http.StatusOK, post)
 }
 
-func (h *handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
 
 	idStr := chi.URLParam(r, "id")
@@ -95,7 +95,7 @@ func (h *handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	json.Write(w, http.StatusOK, post)
 }
 
-func (h *handler) DeletePost(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
 
 	idStr := chi.URLParam(r, "id")
@@ -122,7 +122,7 @@ func (h *handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *handler) ListPostsByUserID(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ListPostsByUserID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "user_id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
