@@ -8,6 +8,7 @@ import (
 	repo "github.com/etherealsense/social-network/internal/adapter/postgresql/sqlc"
 	"github.com/etherealsense/social-network/internal/auth"
 	"github.com/etherealsense/social-network/internal/comment"
+	"github.com/etherealsense/social-network/internal/follow"
 	"github.com/etherealsense/social-network/internal/post"
 	"github.com/etherealsense/social-network/internal/user"
 	"github.com/go-chi/chi/v5"
@@ -94,6 +95,18 @@ func (app *application) mount() http.Handler {
 			r.Post("/posts/{post_id}/comments", commentHandler.CreateComment)
 			r.Put("/comments/{id}", commentHandler.UpdateComment)
 			r.Delete("/comments/{id}", commentHandler.DeleteComment)
+		})
+
+		followService := follow.NewService(repo.New(app.db))
+		followHandler := follow.NewHandler(followService)
+		r.Get("/users/{user_id}/followers", followHandler.ListFollowers)
+		r.Get("/users/{user_id}/following", followHandler.ListFollowing)
+
+		r.Group(func(r chi.Router) {
+			r.Use(auth.Verifier(jwtAuth))
+			r.Use(auth.Authenticator(jwtAuth))
+			r.Post("/users/{user_id}/follow", followHandler.FollowUser)
+			r.Delete("/users/{user_id}/follow", followHandler.UnfollowUser)
 		})
 	})
 

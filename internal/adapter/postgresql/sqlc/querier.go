@@ -18,9 +18,13 @@ type Querier interface {
 	FindPostByID(ctx context.Context, id int32) (Post, error)
 	FindUserByEmail(ctx context.Context, email string) (User, error)
 	FindUserByID(ctx context.Context, id int32) (User, error)
+	FollowUser(ctx context.Context, arg FollowUserParams) (Follow, error)
 	ListCommentsByPostID(ctx context.Context, postID int32) ([]Comment, error)
+	ListFollowers(ctx context.Context, followingID int32) ([]Follow, error)
+	ListFollowing(ctx context.Context, followerID int32) ([]Follow, error)
 	ListPostsByUserID(ctx context.Context, userID int32) ([]Post, error)
 	ListUsers(ctx context.Context) ([]User, error)
+	UnfollowUser(ctx context.Context, arg UnfollowUserParams) error
 	UpdateComment(ctx context.Context, arg UpdateCommentParams) (Comment, error)
 	UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
