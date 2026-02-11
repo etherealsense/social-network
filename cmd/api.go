@@ -26,16 +26,20 @@ type application struct {
 }
 
 type config struct {
-	env                string
-	addr               string
-	db                 dbConfig
-	jwtSecret          string
-	jwtAccessTokenTTL  time.Duration
-	jwtRefreshTokenTTL time.Duration
+	env  string
+	addr string
+	db   dbConfig
+	jwt  jwtConfig
 }
 
 type dbConfig struct {
 	dsn string
+}
+
+type jwtConfig struct {
+	secret          string
+	accessTokenTTL  time.Duration
+	refreshTokenTTL time.Duration
 }
 
 func (app *application) mount() http.Handler {
@@ -63,7 +67,7 @@ func (app *application) mount() http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		repository := repo.New(app.db)
 
-		jwtAuth := auth.NewJWTAuth(app.config.jwtSecret, app.config.jwtAccessTokenTTL, app.config.jwtRefreshTokenTTL)
+		jwtAuth := auth.NewJWTAuth(app.config.jwt.secret, app.config.jwt.accessTokenTTL, app.config.jwt.refreshTokenTTL)
 		authService := auth.NewService(repository)
 		cookieConfig := auth.CookieConfig{
 			Secure:   app.config.env == "production",

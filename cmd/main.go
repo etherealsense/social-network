@@ -29,9 +29,11 @@ func main() {
 		db: dbConfig{
 			dsn: env.GetString("GOOSE_DBSTRING"),
 		},
-		jwtSecret:          env.GetString("JWT_SECRET"),
-		jwtAccessTokenTTL:  time.Duration(env.GetInt("JWT_ACCESS_TOKEN_TTL")) * time.Hour,
-		jwtRefreshTokenTTL: time.Duration(env.GetInt("JWT_REFRESH_TOKEN_TTL")) * time.Hour,
+		jwt: jwtConfig{
+			secret:          env.GetString("JWT_SECRET"),
+			accessTokenTTL:  time.Duration(env.GetInt("JWT_ACCESS_TOKEN_TTL")) * time.Hour,
+			refreshTokenTTL: time.Duration(env.GetInt("JWT_REFRESH_TOKEN_TTL")) * time.Hour,
+		},
 	}
 
 	var handler slog.Handler
