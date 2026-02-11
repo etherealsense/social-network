@@ -9,14 +9,19 @@ import (
 )
 
 type Querier interface {
+	CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error)
 	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	DeleteComment(ctx context.Context, id int32) error
 	DeletePost(ctx context.Context, id int32) error
+	FindCommentByID(ctx context.Context, id int32) (Comment, error)
 	FindPostByID(ctx context.Context, id int32) (Post, error)
 	FindUserByEmail(ctx context.Context, email string) (User, error)
 	FindUserByID(ctx context.Context, id int32) (User, error)
+	ListCommentsByPostID(ctx context.Context, postID int32) ([]Comment, error)
 	ListPostsByUserID(ctx context.Context, userID int32) ([]Post, error)
 	ListUsers(ctx context.Context) ([]User, error)
+	UpdateComment(ctx context.Context, arg UpdateCommentParams) (Comment, error)
 	UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
 }
