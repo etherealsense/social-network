@@ -14,12 +14,12 @@ import (
 	"github.com/etherealsense/social-network/internal/user"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type application struct {
 	config config
-	db     *pgx.Conn
+	db     *pgxpool.Pool
 }
 
 type config struct {

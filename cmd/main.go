@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/etherealsense/social-network/pkg/env"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
@@ -29,15 +29,15 @@ func main() {
 		jwtRefreshTokenTTL: time.Duration(env.GetInt("JWT_REFRESH_TOKEN_TTL")) * time.Hour,
 	}
 
-	conn, err := pgx.Connect(ctx, cfg.db.dsn)
+	pool, err := pgxpool.New(ctx, cfg.db.dsn)
 	if err != nil {
 		log.Panic(err)
 	}
-	defer conn.Close(ctx)
+	defer pool.Close()
 
 	app := &application{
 		config: cfg,
-		db:     conn,
+		db:     pool,
 	}
 
 	h := app.mount()
