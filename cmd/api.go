@@ -9,6 +9,7 @@ import (
 	"github.com/etherealsense/social-network/internal/auth"
 	"github.com/etherealsense/social-network/internal/comment"
 	"github.com/etherealsense/social-network/internal/follow"
+	"github.com/etherealsense/social-network/internal/like"
 	"github.com/etherealsense/social-network/internal/post"
 	"github.com/etherealsense/social-network/internal/user"
 	"github.com/go-chi/chi/v5"
@@ -107,6 +108,17 @@ func (app *application) mount() http.Handler {
 			r.Use(auth.Authenticator(jwtAuth))
 			r.Post("/users/{user_id}/follow", followHandler.FollowUser)
 			r.Delete("/users/{user_id}/follow", followHandler.UnfollowUser)
+		})
+
+		likeService := like.NewService(repo.New(app.db))
+		likeHandler := like.NewHandler(likeService)
+		r.Get("/posts/{post_id}/likes", likeHandler.ListLikesByPostID)
+
+		r.Group(func(r chi.Router) {
+			r.Use(auth.Verifier(jwtAuth))
+			r.Use(auth.Authenticator(jwtAuth))
+			r.Post("/posts/{post_id}/like", likeHandler.LikePost)
+			r.Delete("/posts/{post_id}/like", likeHandler.UnlikePost)
 		})
 	})
 
