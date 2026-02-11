@@ -59,8 +59,13 @@ func (app *application) mount() http.Handler {
 		authHandler := auth.NewHandler(authService, jwtAuth, cookieConfig)
 		r.Post("/auth/register", authHandler.Register)
 		r.Post("/auth/login", authHandler.Login)
-		r.Post("/auth/refresh", authHandler.Refresh)
-		r.Post("/auth/logout", authHandler.Logout)
+
+		r.Group(func(r chi.Router) {
+			r.Use(auth.Verifier(jwtAuth))
+			r.Use(auth.Authenticator(jwtAuth))
+			r.Post("/auth/refresh", authHandler.Refresh)
+			r.Post("/auth/logout", authHandler.Logout)
+		})
 
 		userService := user.NewService(repo.New(app.db))
 		userHandler := user.NewHandler(userService)
