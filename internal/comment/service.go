@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	ErrCommentNotFound = errors.New("comment not found")
-	ErrForbidden       = errors.New("forbidden")
+	ErrCommentNotFound  = errors.New("comment not found")
+	ErrCommentForbidden = errors.New("forbidden")
 )
 
 type Service interface {
@@ -52,7 +52,7 @@ func (s *svc) UpdateComment(ctx context.Context, id int32, userID int32, req Upd
 	}
 
 	if c.UserID != userID {
-		return repo.Comment{}, ErrForbidden
+		return repo.Comment{}, ErrCommentForbidden
 	}
 
 	params := repo.UpdateCommentParams{
@@ -73,7 +73,7 @@ func (s *svc) DeleteComment(ctx context.Context, id int32, userID int32) error {
 	}
 
 	if c.UserID != userID {
-		return ErrForbidden
+		return ErrCommentForbidden
 	}
 
 	return s.repo.DeleteComment(ctx, id)

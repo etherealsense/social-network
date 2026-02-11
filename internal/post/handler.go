@@ -102,6 +102,8 @@ func (h *handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		switch err {
 		case ErrPostNotFound:
 			http.Error(w, err.Error(), http.StatusNotFound)
+		case ErrPostForbidden:
+			http.Error(w, err.Error(), http.StatusForbidden)
 		default:
 			log.Printf("failed to update post: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -137,6 +139,8 @@ func (h *handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		switch err {
 		case ErrPostNotFound:
 			http.Error(w, err.Error(), http.StatusNotFound)
+		case ErrPostForbidden:
+			http.Error(w, err.Error(), http.StatusForbidden)
 		default:
 			log.Printf("failed to delete post: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)

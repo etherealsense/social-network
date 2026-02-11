@@ -11,6 +11,7 @@ import (
 var (
 	ErrPostAlreadyExists = errors.New("post already exists")
 	ErrPostNotFound      = errors.New("post not found")
+	ErrPostForbidden     = errors.New("forbidden")
 )
 
 type Service interface {
@@ -52,7 +53,7 @@ func (s *svc) UpdatePost(ctx context.Context, id int32, userID int32, req Update
 	}
 
 	if post.UserID != userID {
-		return repo.Post{}, errors.New("forbidden")
+		return repo.Post{}, ErrPostForbidden
 	}
 
 	params := repo.UpdatePostParams{
@@ -77,7 +78,7 @@ func (s *svc) DeletePost(ctx context.Context, id int32, userID int32) error {
 	}
 
 	if post.UserID != userID {
-		return errors.New("forbidden")
+		return ErrPostForbidden
 	}
 
 	return s.repo.DeletePost(ctx, id)

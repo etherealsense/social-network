@@ -109,7 +109,7 @@ func (h *handler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 		switch err {
 		case ErrCommentNotFound:
 			http.Error(w, err.Error(), http.StatusNotFound)
-		case ErrForbidden:
+		case ErrCommentForbidden:
 			http.Error(w, err.Error(), http.StatusForbidden)
 		default:
 			log.Printf("failed to update comment: %v", err)
@@ -146,7 +146,7 @@ func (h *handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 		switch err {
 		case ErrCommentNotFound:
 			http.Error(w, err.Error(), http.StatusNotFound)
-		case ErrForbidden:
+		case ErrCommentForbidden:
 			http.Error(w, err.Error(), http.StatusForbidden)
 		default:
 			log.Printf("failed to delete comment: %v", err)
