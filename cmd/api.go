@@ -15,6 +15,7 @@ import (
 	"github.com/etherealsense/social-network/internal/user"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httprate"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -45,6 +46,7 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
+	r.Use(httprate.LimitByIP(100, time.Minute))
 	r.Use(middleware.Timeout(time.Minute))
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -61,8 +63,11 @@ func (app *application) mount() http.Handler {
 			SameSite: http.SameSiteLaxMode,
 		}
 		authHandler := auth.NewHandler(authService, jwtAuth, cookieConfig)
-		r.Post("/auth/register", authHandler.Register)
-		r.Post("/auth/login", authHandler.Login)
+		r.Group(func(r chi.Router) {
+			r.Use(httprate.LimitByIP(10, time.Minute))
+			r.Post("/auth/register", authHandler.Register)
+			r.Post("/auth/login", authHandler.Login)
+		})
 
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Verifier(jwtAuth))
