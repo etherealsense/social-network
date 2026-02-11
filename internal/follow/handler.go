@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/etherealsense/social-network/internal/auth"
 	"github.com/etherealsense/social-network/pkg/json"
 	"github.com/etherealsense/social-network/pkg/pagination"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/jwtauth/v5"
 )
 
 type handler struct {
@@ -20,17 +20,7 @@ func NewHandler(service Service) *handler {
 }
 
 func (h *handler) FollowUser(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	uid, ok := claims["user_id"].(float64)
-	if !ok {
-		http.Error(w, "invalid token claims", http.StatusUnauthorized)
-		return
-	}
+	uid := auth.UserIDFromContext(r.Context())
 
 	followingIDStr := chi.URLParam(r, "user_id")
 	followingID, err := strconv.Atoi(followingIDStr)
@@ -39,7 +29,7 @@ func (h *handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	follow, err := h.service.FollowUser(r.Context(), int32(uid), int32(followingID))
+	follow, err := h.service.FollowUser(r.Context(), uid, int32(followingID))
 	if err != nil {
 		switch err {
 		case ErrSelfFollow:
@@ -57,17 +47,7 @@ func (h *handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	uid, ok := claims["user_id"].(float64)
-	if !ok {
-		http.Error(w, "invalid token claims", http.StatusUnauthorized)
-		return
-	}
+	uid := auth.UserIDFromContext(r.Context())
 
 	followingIDStr := chi.URLParam(r, "user_id")
 	followingID, err := strconv.Atoi(followingIDStr)
@@ -76,7 +56,7 @@ func (h *handler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.UnfollowUser(r.Context(), int32(uid), int32(followingID))
+	err = h.service.UnfollowUser(r.Context(), uid, int32(followingID))
 	if err != nil {
 		switch err {
 		case ErrUserNotFound:

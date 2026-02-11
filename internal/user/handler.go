@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/etherealsense/social-network/internal/auth"
 	"github.com/etherealsense/social-network/pkg/json"
-	"github.com/go-chi/jwtauth/v5"
 )
 
 type handler struct {
@@ -17,19 +17,9 @@ func NewHandler(service Service) *handler {
 }
 
 func (h *handler) GetMe(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
+	uid := auth.UserIDFromContext(r.Context())
 
-	uid, ok := claims["user_id"].(float64)
-	if !ok {
-		http.Error(w, "invalid token claims", http.StatusUnauthorized)
-		return
-	}
-
-	user, err := h.service.FindUserByID(r.Context(), int32(uid))
+	user, err := h.service.FindUserByID(r.Context(), uid)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -39,17 +29,7 @@ func (h *handler) GetMe(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	userID, ok := claims["user_id"].(float64)
-	if !ok {
-		http.Error(w, "invalid token claims", http.StatusUnauthorized)
-		return
-	}
+	userID := auth.UserIDFromContext(r.Context())
 
 	var req UpdateUserRequest
 	if err := json.Read(r, &req); err != nil {
@@ -58,7 +38,7 @@ func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.UpdateUser(r.Context(), int32(userID), req)
+	user, err := h.service.UpdateUser(r.Context(), userID, req)
 	if err != nil {
 		log.Printf("failed to update user: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

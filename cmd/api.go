@@ -67,6 +67,7 @@ func (app *application) mount() http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Verifier(jwtAuth))
 			r.Use(auth.Authenticator(jwtAuth))
+			r.Use(auth.ExtractUserID)
 			r.Post("/auth/refresh", authHandler.Refresh)
 			r.Post("/auth/logout", authHandler.Logout)
 		})
@@ -77,6 +78,7 @@ func (app *application) mount() http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Verifier(jwtAuth))
 			r.Use(auth.Authenticator(jwtAuth))
+			r.Use(auth.ExtractUserID)
 			r.Get("/users/me", userHandler.GetMe)
 			r.Put("/users/me", userHandler.UpdateUser)
 		})
@@ -89,6 +91,7 @@ func (app *application) mount() http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Verifier(jwtAuth))
 			r.Use(auth.Authenticator(jwtAuth))
+			r.Use(auth.ExtractUserID)
 			r.Post("/posts", postHandler.CreatePost)
 			r.Put("/posts/{id}", postHandler.UpdatePost)
 			r.Delete("/posts/{id}", postHandler.DeletePost)
@@ -102,6 +105,7 @@ func (app *application) mount() http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Verifier(jwtAuth))
 			r.Use(auth.Authenticator(jwtAuth))
+			r.Use(auth.ExtractUserID)
 			r.Post("/posts/{post_id}/comments", commentHandler.CreateComment)
 			r.Put("/comments/{id}", commentHandler.UpdateComment)
 			r.Delete("/comments/{id}", commentHandler.DeleteComment)
@@ -115,6 +119,7 @@ func (app *application) mount() http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Verifier(jwtAuth))
 			r.Use(auth.Authenticator(jwtAuth))
+			r.Use(auth.ExtractUserID)
 			r.Post("/users/{user_id}/follow", followHandler.FollowUser)
 			r.Delete("/users/{user_id}/follow", followHandler.UnfollowUser)
 		})
@@ -126,6 +131,7 @@ func (app *application) mount() http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Verifier(jwtAuth))
 			r.Use(auth.Authenticator(jwtAuth))
+			r.Use(auth.ExtractUserID)
 			r.Post("/posts/{post_id}/like", likeHandler.LikePost)
 			r.Delete("/posts/{post_id}/like", likeHandler.UnlikePost)
 		})

@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/etherealsense/social-network/internal/auth"
 	"github.com/etherealsense/social-network/pkg/json"
 	"github.com/etherealsense/social-network/pkg/pagination"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/jwtauth/v5"
 )
 
 type handler struct {
@@ -20,17 +20,7 @@ func NewHandler(service Service) *handler {
 }
 
 func (h *handler) LikePost(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	uid, ok := claims["user_id"].(float64)
-	if !ok {
-		http.Error(w, "invalid token claims", http.StatusUnauthorized)
-		return
-	}
+	uid := auth.UserIDFromContext(r.Context())
 
 	postIDStr := chi.URLParam(r, "post_id")
 	postID, err := strconv.Atoi(postIDStr)
@@ -39,7 +29,7 @@ func (h *handler) LikePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	l, err := h.service.LikePost(r.Context(), int32(uid), int32(postID))
+	l, err := h.service.LikePost(r.Context(), uid, int32(postID))
 	if err != nil {
 		switch err {
 		case ErrPostNotFound:
@@ -57,17 +47,7 @@ func (h *handler) LikePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) UnlikePost(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	uid, ok := claims["user_id"].(float64)
-	if !ok {
-		http.Error(w, "invalid token claims", http.StatusUnauthorized)
-		return
-	}
+	uid := auth.UserIDFromContext(r.Context())
 
 	postIDStr := chi.URLParam(r, "post_id")
 	postID, err := strconv.Atoi(postIDStr)
@@ -76,7 +56,7 @@ func (h *handler) UnlikePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.UnlikePost(r.Context(), int32(uid), int32(postID))
+	err = h.service.UnlikePost(r.Context(), uid, int32(postID))
 	if err != nil {
 		switch err {
 		case ErrPostNotFound:

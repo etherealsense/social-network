@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/etherealsense/social-network/internal/auth"
 	"github.com/etherealsense/social-network/pkg/json"
 	"github.com/etherealsense/social-network/pkg/pagination"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/jwtauth/v5"
 )
 
 type handler struct {
@@ -20,17 +20,7 @@ func NewHandler(service Service) *handler {
 }
 
 func (h *handler) CreatePost(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	uid, ok := claims["user_id"].(float64)
-	if !ok {
-		http.Error(w, "invalid token claims", http.StatusUnauthorized)
-		return
-	}
+	uid := auth.UserIDFromContext(r.Context())
 
 	var req CreatePostRequest
 	if err := json.Read(r, &req); err != nil {
@@ -39,7 +29,7 @@ func (h *handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := h.service.CreatePost(r.Context(), int32(uid), req)
+	post, err := h.service.CreatePost(r.Context(), uid, req)
 	if err != nil {
 		log.Printf("failed to create post: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -72,17 +62,7 @@ func (h *handler) GetPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	uid, ok := claims["user_id"].(float64)
-	if !ok {
-		http.Error(w, "invalid token claims", http.StatusUnauthorized)
-		return
-	}
+	uid := auth.UserIDFromContext(r.Context())
 
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
@@ -98,7 +78,7 @@ func (h *handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := h.service.UpdatePost(r.Context(), int32(id), int32(uid), req)
+	post, err := h.service.UpdatePost(r.Context(), int32(id), uid, req)
 	if err != nil {
 		switch err {
 		case ErrPostNotFound:
@@ -116,17 +96,7 @@ func (h *handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) DeletePost(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	uid, ok := claims["user_id"].(float64)
-	if !ok {
-		http.Error(w, "invalid token claims", http.StatusUnauthorized)
-		return
-	}
+	uid := auth.UserIDFromContext(r.Context())
 
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
@@ -135,7 +105,7 @@ func (h *handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.DeletePost(r.Context(), int32(id), int32(uid))
+	err = h.service.DeletePost(r.Context(), int32(id), uid)
 	if err != nil {
 		switch err {
 		case ErrPostNotFound:
