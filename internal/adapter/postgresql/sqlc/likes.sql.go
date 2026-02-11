@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const countLikesByPostID = `-- name: CountLikesByPostID :one
+SELECT COUNT(*) FROM likes WHERE post_id = $1
+`
+
+func (q *Queries) CountLikesByPostID(ctx context.Context, postID int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countLikesByPostID, postID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const likePost = `-- name: LikePost :one
 INSERT INTO likes (user_id, post_id) VALUES ($1, $2) RETURNING id, user_id, post_id, created_at
 `
@@ -31,11 +42,17 @@ func (q *Queries) LikePost(ctx context.Context, arg LikePostParams) (Like, error
 }
 
 const listLikesByPostID = `-- name: ListLikesByPostID :many
-SELECT id, user_id, post_id, created_at FROM likes WHERE post_id = $1 ORDER BY created_at DESC
+SELECT id, user_id, post_id, created_at FROM likes WHERE post_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) ListLikesByPostID(ctx context.Context, postID int32) ([]Like, error) {
-	rows, err := q.db.Query(ctx, listLikesByPostID, postID)
+type ListLikesByPostIDParams struct {
+	PostID int32 `json:"post_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListLikesByPostID(ctx context.Context, arg ListLikesByPostIDParams) ([]Like, error) {
+	rows, err := q.db.Query(ctx, listLikesByPostID, arg.PostID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

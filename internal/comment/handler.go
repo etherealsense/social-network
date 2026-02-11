@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/etherealsense/social-network/pkg/json"
+	"github.com/etherealsense/social-network/pkg/pagination"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 )
@@ -166,7 +167,9 @@ func (h *handler) ListCommentsByPostID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	comments, err := h.service.ListCommentsByPostID(r.Context(), int32(postID))
+	p := pagination.Parse(r)
+
+	comments, err := h.service.ListCommentsByPostID(r.Context(), int32(postID), p.Limit, p.Offset)
 	if err != nil {
 		log.Printf("failed to list comments: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

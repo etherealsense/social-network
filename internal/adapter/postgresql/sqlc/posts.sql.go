@@ -11,6 +11,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countPostsByUserID = `-- name: CountPostsByUserID :one
+SELECT COUNT(*) FROM posts WHERE user_id = $1
+`
+
+func (q *Queries) CountPostsByUserID(ctx context.Context, userID int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countPostsByUserID, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createPost = `-- name: CreatePost :one
 INSERT INTO posts (user_id, title, content) VALUES ($1, $2, $3) RETURNING id, user_id, title, content, created_at, updated_at
 `
@@ -63,11 +74,17 @@ func (q *Queries) FindPostByID(ctx context.Context, id int32) (Post, error) {
 }
 
 const listPostsByUserID = `-- name: ListPostsByUserID :many
-SELECT id, user_id, title, content, created_at, updated_at FROM posts WHERE user_id = $1
+SELECT id, user_id, title, content, created_at, updated_at FROM posts WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) ListPostsByUserID(ctx context.Context, userID int32) ([]Post, error) {
-	rows, err := q.db.Query(ctx, listPostsByUserID, userID)
+type ListPostsByUserIDParams struct {
+	UserID int32 `json:"user_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListPostsByUserID(ctx context.Context, arg ListPostsByUserIDParams) ([]Post, error) {
+	rows, err := q.db.Query(ctx, listPostsByUserID, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

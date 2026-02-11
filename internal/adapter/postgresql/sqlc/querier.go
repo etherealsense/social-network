@@ -9,6 +9,11 @@ import (
 )
 
 type Querier interface {
+	CountCommentsByPostID(ctx context.Context, postID int32) (int64, error)
+	CountFollowers(ctx context.Context, followingID int32) (int64, error)
+	CountFollowing(ctx context.Context, followerID int32) (int64, error)
+	CountLikesByPostID(ctx context.Context, postID int32) (int64, error)
+	CountPostsByUserID(ctx context.Context, userID int32) (int64, error)
 	CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error)
 	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
@@ -20,11 +25,11 @@ type Querier interface {
 	FindUserByID(ctx context.Context, id int32) (User, error)
 	FollowUser(ctx context.Context, arg FollowUserParams) (Follow, error)
 	LikePost(ctx context.Context, arg LikePostParams) (Like, error)
-	ListCommentsByPostID(ctx context.Context, postID int32) ([]Comment, error)
-	ListFollowers(ctx context.Context, followingID int32) ([]Follow, error)
-	ListFollowing(ctx context.Context, followerID int32) ([]Follow, error)
-	ListLikesByPostID(ctx context.Context, postID int32) ([]Like, error)
-	ListPostsByUserID(ctx context.Context, userID int32) ([]Post, error)
+	ListCommentsByPostID(ctx context.Context, arg ListCommentsByPostIDParams) ([]Comment, error)
+	ListFollowers(ctx context.Context, arg ListFollowersParams) ([]Follow, error)
+	ListFollowing(ctx context.Context, arg ListFollowingParams) ([]Follow, error)
+	ListLikesByPostID(ctx context.Context, arg ListLikesByPostIDParams) ([]Like, error)
+	ListPostsByUserID(ctx context.Context, arg ListPostsByUserIDParams) ([]Post, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	UnfollowUser(ctx context.Context, arg UnfollowUserParams) error
 	UnlikePost(ctx context.Context, arg UnlikePostParams) error

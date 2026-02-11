@@ -9,6 +9,28 @@ import (
 	"context"
 )
 
+const countFollowers = `-- name: CountFollowers :one
+SELECT COUNT(*) FROM follows WHERE following_id = $1
+`
+
+func (q *Queries) CountFollowers(ctx context.Context, followingID int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countFollowers, followingID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countFollowing = `-- name: CountFollowing :one
+SELECT COUNT(*) FROM follows WHERE follower_id = $1
+`
+
+func (q *Queries) CountFollowing(ctx context.Context, followerID int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countFollowing, followerID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const followUser = `-- name: FollowUser :one
 INSERT INTO follows (follower_id, following_id) VALUES ($1, $2) RETURNING id, follower_id, following_id, created_at
 `
@@ -31,11 +53,17 @@ func (q *Queries) FollowUser(ctx context.Context, arg FollowUserParams) (Follow,
 }
 
 const listFollowers = `-- name: ListFollowers :many
-SELECT id, follower_id, following_id, created_at FROM follows WHERE following_id = $1 ORDER BY created_at DESC
+SELECT id, follower_id, following_id, created_at FROM follows WHERE following_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) ListFollowers(ctx context.Context, followingID int32) ([]Follow, error) {
-	rows, err := q.db.Query(ctx, listFollowers, followingID)
+type ListFollowersParams struct {
+	FollowingID int32 `json:"following_id"`
+	Limit       int32 `json:"limit"`
+	Offset      int32 `json:"offset"`
+}
+
+func (q *Queries) ListFollowers(ctx context.Context, arg ListFollowersParams) ([]Follow, error) {
+	rows, err := q.db.Query(ctx, listFollowers, arg.FollowingID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -60,11 +88,17 @@ func (q *Queries) ListFollowers(ctx context.Context, followingID int32) ([]Follo
 }
 
 const listFollowing = `-- name: ListFollowing :many
-SELECT id, follower_id, following_id, created_at FROM follows WHERE follower_id = $1 ORDER BY created_at DESC
+SELECT id, follower_id, following_id, created_at FROM follows WHERE follower_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) ListFollowing(ctx context.Context, followerID int32) ([]Follow, error) {
-	rows, err := q.db.Query(ctx, listFollowing, followerID)
+type ListFollowingParams struct {
+	FollowerID int32 `json:"follower_id"`
+	Limit      int32 `json:"limit"`
+	Offset     int32 `json:"offset"`
+}
+
+func (q *Queries) ListFollowing(ctx context.Context, arg ListFollowingParams) ([]Follow, error) {
+	rows, err := q.db.Query(ctx, listFollowing, arg.FollowerID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

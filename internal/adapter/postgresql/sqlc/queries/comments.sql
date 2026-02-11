@@ -1,5 +1,8 @@
 -- name: ListCommentsByPostID :many
-SELECT * FROM comments WHERE post_id = $1 ORDER BY created_at ASC;
+SELECT * FROM comments WHERE post_id = $1 ORDER BY created_at ASC LIMIT $2 OFFSET $3;
+
+-- name: CountCommentsByPostID :one
+SELECT COUNT(*) FROM comments WHERE post_id = $1;
 
 -- name: CreateComment :one
 INSERT INTO comments (post_id, user_id, content) VALUES ($1, $2, $3) RETURNING id, post_id, user_id, content, created_at, updated_at;

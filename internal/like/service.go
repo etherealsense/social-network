@@ -15,7 +15,7 @@ var (
 type Service interface {
 	LikePost(ctx context.Context, userID, postID int32) (repo.Like, error)
 	UnlikePost(ctx context.Context, userID, postID int32) error
-	ListLikesByPostID(ctx context.Context, postID int32) ([]repo.Like, error)
+	ListLikesByPostID(ctx context.Context, postID int32, limit, offset int32) ([]repo.Like, error)
 }
 
 type svc struct {
@@ -54,6 +54,10 @@ func (s *svc) UnlikePost(ctx context.Context, userID, postID int32) error {
 	})
 }
 
-func (s *svc) ListLikesByPostID(ctx context.Context, postID int32) ([]repo.Like, error) {
-	return s.repo.ListLikesByPostID(ctx, postID)
+func (s *svc) ListLikesByPostID(ctx context.Context, postID int32, limit, offset int32) ([]repo.Like, error) {
+	return s.repo.ListLikesByPostID(ctx, repo.ListLikesByPostIDParams{
+		PostID: postID,
+		Limit:  limit,
+		Offset: offset,
+	})
 }

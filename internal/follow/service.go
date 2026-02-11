@@ -16,8 +16,8 @@ var (
 type Service interface {
 	FollowUser(ctx context.Context, followerID, followingID int32) (repo.Follow, error)
 	UnfollowUser(ctx context.Context, followerID, followingID int32) error
-	ListFollowers(ctx context.Context, userID int32) ([]repo.Follow, error)
-	ListFollowing(ctx context.Context, userID int32) ([]repo.Follow, error)
+	ListFollowers(ctx context.Context, userID int32, limit, offset int32) ([]repo.Follow, error)
+	ListFollowing(ctx context.Context, userID int32, limit, offset int32) ([]repo.Follow, error)
 }
 
 type svc struct {
@@ -55,10 +55,18 @@ func (s *svc) UnfollowUser(ctx context.Context, followerID, followingID int32) e
 	})
 }
 
-func (s *svc) ListFollowers(ctx context.Context, userID int32) ([]repo.Follow, error) {
-	return s.repo.ListFollowers(ctx, userID)
+func (s *svc) ListFollowers(ctx context.Context, userID int32, limit, offset int32) ([]repo.Follow, error) {
+	return s.repo.ListFollowers(ctx, repo.ListFollowersParams{
+		FollowingID: userID,
+		Limit:       limit,
+		Offset:      offset,
+	})
 }
 
-func (s *svc) ListFollowing(ctx context.Context, userID int32) ([]repo.Follow, error) {
-	return s.repo.ListFollowing(ctx, userID)
+func (s *svc) ListFollowing(ctx context.Context, userID int32, limit, offset int32) ([]repo.Follow, error) {
+	return s.repo.ListFollowing(ctx, repo.ListFollowingParams{
+		FollowerID: userID,
+		Limit:      limit,
+		Offset:     offset,
+	})
 }

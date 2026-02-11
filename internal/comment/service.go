@@ -18,7 +18,7 @@ type Service interface {
 	FindCommentByID(ctx context.Context, id int32) (repo.Comment, error)
 	UpdateComment(ctx context.Context, id int32, userID int32, req UpdateCommentRequest) (repo.Comment, error)
 	DeleteComment(ctx context.Context, id int32, userID int32) error
-	ListCommentsByPostID(ctx context.Context, postID int32) ([]repo.Comment, error)
+	ListCommentsByPostID(ctx context.Context, postID int32, limit, offset int32) ([]repo.Comment, error)
 }
 
 type svc struct {
@@ -79,6 +79,10 @@ func (s *svc) DeleteComment(ctx context.Context, id int32, userID int32) error {
 	return s.repo.DeleteComment(ctx, id)
 }
 
-func (s *svc) ListCommentsByPostID(ctx context.Context, postID int32) ([]repo.Comment, error) {
-	return s.repo.ListCommentsByPostID(ctx, postID)
+func (s *svc) ListCommentsByPostID(ctx context.Context, postID int32, limit, offset int32) ([]repo.Comment, error) {
+	return s.repo.ListCommentsByPostID(ctx, repo.ListCommentsByPostIDParams{
+		PostID: postID,
+		Limit:  limit,
+		Offset: offset,
+	})
 }

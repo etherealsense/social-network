@@ -5,7 +5,13 @@ INSERT INTO follows (follower_id, following_id) VALUES ($1, $2) RETURNING id, fo
 DELETE FROM follows WHERE follower_id = $1 AND following_id = $2;
 
 -- name: ListFollowers :many
-SELECT * FROM follows WHERE following_id = $1 ORDER BY created_at DESC;
+SELECT * FROM follows WHERE following_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3;
+
+-- name: CountFollowers :one
+SELECT COUNT(*) FROM follows WHERE following_id = $1;
 
 -- name: ListFollowing :many
-SELECT * FROM follows WHERE follower_id = $1 ORDER BY created_at DESC;
+SELECT * FROM follows WHERE follower_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3;
+
+-- name: CountFollowing :one
+SELECT COUNT(*) FROM follows WHERE follower_id = $1;

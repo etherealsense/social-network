@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/etherealsense/social-network/pkg/json"
+	"github.com/etherealsense/social-network/pkg/pagination"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 )
@@ -160,9 +161,11 @@ func (h *handler) ListPostsByUserID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, err := h.service.ListPostsByUserID(r.Context(), int32(id))
+	p := pagination.Parse(r)
+
+	posts, err := h.service.ListPostsByUserID(r.Context(), int32(id), p.Limit, p.Offset)
 	if err != nil {
-		log.Printf("failed to list posts by user_id: %v", err)
+		log.Printf("failed to list posts: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

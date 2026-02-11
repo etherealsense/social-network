@@ -11,6 +11,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countCommentsByPostID = `-- name: CountCommentsByPostID :one
+SELECT COUNT(*) FROM comments WHERE post_id = $1
+`
+
+func (q *Queries) CountCommentsByPostID(ctx context.Context, postID int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countCommentsByPostID, postID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createComment = `-- name: CreateComment :one
 INSERT INTO comments (post_id, user_id, content) VALUES ($1, $2, $3) RETURNING id, post_id, user_id, content, created_at, updated_at
 `
@@ -63,11 +74,17 @@ func (q *Queries) FindCommentByID(ctx context.Context, id int32) (Comment, error
 }
 
 const listCommentsByPostID = `-- name: ListCommentsByPostID :many
-SELECT id, post_id, user_id, content, created_at, updated_at FROM comments WHERE post_id = $1 ORDER BY created_at ASC
+SELECT id, post_id, user_id, content, created_at, updated_at FROM comments WHERE post_id = $1 ORDER BY created_at ASC LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) ListCommentsByPostID(ctx context.Context, postID int32) ([]Comment, error) {
-	rows, err := q.db.Query(ctx, listCommentsByPostID, postID)
+type ListCommentsByPostIDParams struct {
+	PostID int32 `json:"post_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListCommentsByPostID(ctx context.Context, arg ListCommentsByPostIDParams) ([]Comment, error) {
+	rows, err := q.db.Query(ctx, listCommentsByPostID, arg.PostID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

@@ -19,7 +19,7 @@ type Service interface {
 	FindPostByID(ctx context.Context, id int32) (repo.Post, error)
 	UpdatePost(ctx context.Context, id int32, userID int32, req UpdatePostRequest) (repo.Post, error)
 	DeletePost(ctx context.Context, id int32, userID int32) error
-	ListPostsByUserID(ctx context.Context, userID int32) ([]repo.Post, error)
+	ListPostsByUserID(ctx context.Context, userID int32, limit, offset int32) ([]repo.Post, error)
 }
 
 type svc struct {
@@ -84,6 +84,15 @@ func (s *svc) DeletePost(ctx context.Context, id int32, userID int32) error {
 	return s.repo.DeletePost(ctx, id)
 }
 
-func (s *svc) ListPostsByUserID(ctx context.Context, userID int32) ([]repo.Post, error) {
-	return s.repo.ListPostsByUserID(ctx, userID)
+func (s *svc) ListPostsByUserID(ctx context.Context, userID int32, limit, offset int32) ([]repo.Post, error) {
+	posts, err := s.repo.ListPostsByUserID(ctx, repo.ListPostsByUserIDParams{
+		UserID: userID,
+		Limit:  limit,
+		Offset: offset,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }

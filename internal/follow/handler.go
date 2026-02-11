@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/etherealsense/social-network/pkg/json"
+	"github.com/etherealsense/social-network/pkg/pagination"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 )
@@ -98,7 +99,9 @@ func (h *handler) ListFollowers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	followers, err := h.service.ListFollowers(r.Context(), int32(userID))
+	p := pagination.Parse(r)
+
+	followers, err := h.service.ListFollowers(r.Context(), int32(userID), p.Limit, p.Offset)
 	if err != nil {
 		log.Printf("failed to list followers: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -116,7 +119,9 @@ func (h *handler) ListFollowing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	following, err := h.service.ListFollowing(r.Context(), int32(userID))
+	p := pagination.Parse(r)
+
+	following, err := h.service.ListFollowing(r.Context(), int32(userID), p.Limit, p.Offset)
 	if err != nil {
 		log.Printf("failed to list following: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
