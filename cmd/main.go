@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/etherealsense/social-network/pkg/env"
@@ -33,7 +36,6 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	defer pool.Close()
 
 	app := &application{
 		config: cfg,
@@ -41,5 +43,27 @@ func main() {
 	}
 
 	h := app.mount()
-	log.Fatal(app.run(h))
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		if err := app.run(h); err != nil {
+			log.Printf("server error: %v", err)
+		}
+	}()
+
+	log.Println("server started")
+
+	<-quit
+	log.Println("shutting down server gracefully")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := app.shutdown(shutdownCtx); err != nil {
+		log.Printf("server forced to shutdown: %v", err)
+	}
+
+	log.Println("server stopped")
 }

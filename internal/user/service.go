@@ -46,31 +46,6 @@ func (s *svc) FindUserByID(ctx context.Context, id int32) (UserResponse, error) 
 	}, nil
 }
 
-func (s *svc) CreateUser(ctx context.Context, user repo.CreateUserParams) (repo.CreateUserRow, error) {
-	err := validator.ValidateEmail(user.Email)
-	if err != nil {
-		return repo.CreateUserRow{}, err
-	}
-
-	_, err = s.repo.FindUserByEmail(ctx, user.Email)
-	if err == nil {
-		return repo.CreateUserRow{}, ErrUserAlreadyExists
-	}
-
-	err = validator.ValidatePassword(user.Password)
-	if err != nil {
-		return repo.CreateUserRow{}, err
-	}
-
-	p, err := crypto.HashPassword(user.Password)
-	if err != nil {
-		return repo.CreateUserRow{}, err
-	}
-	user.Password = p
-
-	return s.repo.CreateUser(ctx, user)
-}
-
 func (s *svc) UpdateUser(ctx context.Context, id int32, req UpdateUserRequest) (repo.UpdateUserRow, error) {
 	_, err := s.repo.FindUserByID(ctx, id)
 	if err != nil {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
@@ -20,6 +21,7 @@ import (
 type application struct {
 	config config
 	db     *pgxpool.Pool
+	server *http.Server
 }
 
 type config struct {
@@ -133,7 +135,7 @@ func (app *application) mount() http.Handler {
 }
 
 func (app *application) run(h http.Handler) error {
-	srv := &http.Server{
+	app.server = &http.Server{
 		Addr:         app.config.addr,
 		Handler:      h,
 		WriteTimeout: time.Second * 30,
@@ -143,5 +145,17 @@ func (app *application) run(h http.Handler) error {
 
 	log.Printf("server has started at %s", app.config.addr)
 
-	return srv.ListenAndServe()
+	return app.server.ListenAndServe()
+}
+
+func (app *application) shutdown(ctx context.Context) error {
+	log.Println("shutting down http server...")
+	if err := app.server.Shutdown(ctx); err != nil {
+		return err
+	}
+
+	log.Println("closing database connection...")
+	app.db.Close()
+
+	return nil
 }
