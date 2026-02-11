@@ -69,12 +69,12 @@ func (app *application) mount() http.Handler {
 
 		userService := user.NewService(repo.New(app.db))
 		userHandler := user.NewHandler(userService)
-		r.Put("/users/{id}", userHandler.UpdateUser)
 
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Verifier(jwtAuth))
 			r.Use(auth.Authenticator(jwtAuth))
 			r.Get("/users/me", userHandler.GetMe)
+			r.Put("/users/me", userHandler.UpdateUser)
 		})
 
 		postService := post.NewService(repo.New(app.db))
