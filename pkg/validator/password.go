@@ -1,6 +1,9 @@
 package validator
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 var (
 	ErrPasswordTooShort = errors.New("password must be at least 8 characters long")
@@ -9,6 +12,8 @@ var (
 )
 
 func ValidatePassword(password string) error {
+	password = strings.TrimSpace(password)
+
 	if password == "" {
 		return ErrPasswordEmpty
 	}
