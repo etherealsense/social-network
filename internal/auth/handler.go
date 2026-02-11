@@ -111,13 +111,13 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.jwtAuth.ValidateRefreshToken(cookie.Value)
+	uid, err := h.jwtAuth.ValidateRefreshToken(cookie.Value)
 	if err != nil {
 		http.Error(w, "invalid refresh token", http.StatusUnauthorized)
 		return
 	}
 
-	tokens, err := h.jwtAuth.GenerateTokenPair(userID)
+	tokens, err := h.jwtAuth.GenerateTokenPair(uid)
 	if err != nil {
 		http.Error(w, "failed to generate tokens", http.StatusInternalServerError)
 		return

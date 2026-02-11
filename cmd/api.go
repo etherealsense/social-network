@@ -61,8 +61,6 @@ func (app *application) mount() http.Handler {
 
 		userService := user.NewService(repo.New(app.db))
 		userHandler := user.NewHandler(userService)
-		r.Get("/users", userHandler.ListUsers)
-		r.Get("/users/{id}", userHandler.FindUserByID)
 		r.Put("/users/{id}", userHandler.UpdateUser)
 
 		r.Group(func(r chi.Router) {
@@ -73,7 +71,16 @@ func (app *application) mount() http.Handler {
 
 		postService := post.NewService(repo.New(app.db))
 		postHandler := post.NewHandler(postService)
+		r.Get("/posts/{id}", postHandler.GetPost)
 		r.Get("/posts/user/{user_id}", postHandler.ListPostsByUserID)
+
+		r.Group(func(r chi.Router) {
+			r.Use(auth.Verifier(jwtAuth))
+			r.Use(auth.Authenticator(jwtAuth))
+			r.Post("/posts", postHandler.CreatePost)
+			r.Put("/posts/{id}", postHandler.UpdatePost)
+			r.Delete("/posts/{id}", postHandler.DeletePost)
+		})
 	})
 
 	return r

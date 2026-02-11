@@ -62,11 +62,11 @@ func (s *svc) CreateUser(ctx context.Context, user repo.CreateUserParams) (repo.
 		return repo.CreateUserRow{}, err
 	}
 
-	hashedPassword, err := crypto.HashPassword(user.Password)
+	p, err := crypto.HashPassword(user.Password)
 	if err != nil {
 		return repo.CreateUserRow{}, err
 	}
-	user.Password = hashedPassword
+	user.Password = p
 
 	return s.repo.CreateUser(ctx, user)
 }

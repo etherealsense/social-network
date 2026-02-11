@@ -11,10 +11,6 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-type RefreshRequest struct {
-	RefreshToken string `json:"refreshToken"`
-}
-
 type AuthResponse struct {
-	AccessToken string `json:"accessToken"`
+	AccessToken string `json:"access_token"`
 }
