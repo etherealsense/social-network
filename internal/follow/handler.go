@@ -1,7 +1,7 @@
 package follow
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -37,7 +37,7 @@ func (h *handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 		case ErrAlreadyFollowing:
 			http.Error(w, err.Error(), http.StatusConflict)
 		default:
-			log.Printf("failed to follow user: %v", err)
+			slog.Error("failed to follow user", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -62,7 +62,7 @@ func (h *handler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 		case ErrUserNotFound:
 			http.Error(w, err.Error(), http.StatusNotFound)
 		default:
-			log.Printf("failed to unfollow user: %v", err)
+			slog.Error("failed to unfollow user", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -83,7 +83,7 @@ func (h *handler) ListFollowers(w http.ResponseWriter, r *http.Request) {
 
 	followers, err := h.service.ListFollowers(r.Context(), int32(userID), p.Limit, p.Offset)
 	if err != nil {
-		log.Printf("failed to list followers: %v", err)
+		slog.Error("failed to list followers", "error", err, "user_id", userID)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -103,7 +103,7 @@ func (h *handler) ListFollowing(w http.ResponseWriter, r *http.Request) {
 
 	following, err := h.service.ListFollowing(r.Context(), int32(userID), p.Limit, p.Offset)
 	if err != nil {
-		log.Printf("failed to list following: %v", err)
+		slog.Error("failed to list following", "error", err, "user_id", userID)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

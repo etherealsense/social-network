@@ -1,7 +1,7 @@
 package like
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -37,7 +37,7 @@ func (h *handler) LikePost(w http.ResponseWriter, r *http.Request) {
 		case ErrAlreadyLiked:
 			http.Error(w, err.Error(), http.StatusConflict)
 		default:
-			log.Printf("failed to like post: %v", err)
+			slog.Error("failed to like post", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -62,7 +62,7 @@ func (h *handler) UnlikePost(w http.ResponseWriter, r *http.Request) {
 		case ErrPostNotFound:
 			http.Error(w, err.Error(), http.StatusNotFound)
 		default:
-			log.Printf("failed to unlike post: %v", err)
+			slog.Error("failed to unlike post", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -83,7 +83,7 @@ func (h *handler) ListLikesByPostID(w http.ResponseWriter, r *http.Request) {
 
 	likes, err := h.service.ListLikesByPostID(r.Context(), int32(postID), p.Limit, p.Offset)
 	if err != nil {
-		log.Printf("failed to list likes: %v", err)
+		slog.Error("failed to list likes", "error", err, "post_id", postID)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

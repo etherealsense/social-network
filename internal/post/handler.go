@@ -1,7 +1,7 @@
 package post
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -24,14 +24,14 @@ func (h *handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	var req CreatePostRequest
 	if err := json.Read(r, &req); err != nil {
-		log.Printf("failed to read post request: %v", err)
+		slog.Error("failed to read post request", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	post, err := h.service.CreatePost(r.Context(), uid, req)
 	if err != nil {
-		log.Printf("failed to create post: %v", err)
+		slog.Error("failed to create post", "error", err, "user_id", uid)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -73,7 +73,7 @@ func (h *handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 	var req UpdatePostRequest
 	if err := json.Read(r, &req); err != nil {
-		log.Printf("failed to read update post request: %v", err)
+		slog.Error("failed to read update post request", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -86,7 +86,7 @@ func (h *handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		case ErrPostForbidden:
 			http.Error(w, err.Error(), http.StatusForbidden)
 		default:
-			log.Printf("failed to update post: %v", err)
+			slog.Error("failed to update post", "error", err, "post_id", id, "user_id", uid)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -113,7 +113,7 @@ func (h *handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		case ErrPostForbidden:
 			http.Error(w, err.Error(), http.StatusForbidden)
 		default:
-			log.Printf("failed to delete post: %v", err)
+			slog.Error("failed to delete post", "error", err, "post_id", id, "user_id", uid)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -126,7 +126,7 @@ func (h *handler) ListPostsByUserID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "user_id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		log.Printf("failed to convert user_id to int: %v", err)
+		slog.Error("failed to convert user_id to int", "error", err, "user_id", idStr)
 		http.Error(w, "invalid user_id", http.StatusBadRequest)
 		return
 	}
@@ -135,7 +135,7 @@ func (h *handler) ListPostsByUserID(w http.ResponseWriter, r *http.Request) {
 
 	posts, err := h.service.ListPostsByUserID(r.Context(), int32(id), p.Limit, p.Offset)
 	if err != nil {
-		log.Printf("failed to list posts: %v", err)
+		slog.Error("failed to list posts", "error", err, "user_id", id)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

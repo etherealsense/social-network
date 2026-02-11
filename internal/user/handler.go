@@ -1,7 +1,7 @@
 package user
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/etherealsense/social-network/internal/auth"
@@ -33,14 +33,14 @@ func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	var req UpdateUserRequest
 	if err := json.Read(r, &req); err != nil {
-		log.Printf("failed to read user: %v", err)
+		slog.Error("failed to read user", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	user, err := h.service.UpdateUser(r.Context(), userID, req)
 	if err != nil {
-		log.Printf("failed to update user: %v", err)
+		slog.Error("failed to update user", "error", err, "user_id", userID)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -1,7 +1,7 @@
 package comment
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -31,14 +31,14 @@ func (h *handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 
 	var req CreateCommentRequest
 	if err := json.Read(r, &req); err != nil {
-		log.Printf("failed to read comment request: %v", err)
+		slog.Error("failed to read comment request", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	comment, err := h.service.CreateComment(r.Context(), int32(postID), uid, req)
 	if err != nil {
-		log.Printf("failed to create comment: %v", err)
+		slog.Error("failed to create comment", "error", err, "post_id", postID, "user_id", uid)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -80,7 +80,7 @@ func (h *handler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 
 	var req UpdateCommentRequest
 	if err := json.Read(r, &req); err != nil {
-		log.Printf("failed to read update comment request: %v", err)
+		slog.Error("failed to read update comment request", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -93,7 +93,7 @@ func (h *handler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 		case ErrCommentForbidden:
 			http.Error(w, err.Error(), http.StatusForbidden)
 		default:
-			log.Printf("failed to update comment: %v", err)
+			slog.Error("failed to update comment", "error", err, "comment_id", id, "user_id", uid)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -120,7 +120,7 @@ func (h *handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 		case ErrCommentForbidden:
 			http.Error(w, err.Error(), http.StatusForbidden)
 		default:
-			log.Printf("failed to delete comment: %v", err)
+			slog.Error("failed to delete comment", "error", err, "comment_id", id, "user_id", uid)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -141,7 +141,7 @@ func (h *handler) ListCommentsByPostID(w http.ResponseWriter, r *http.Request) {
 
 	comments, err := h.service.ListCommentsByPostID(r.Context(), int32(postID), p.Limit, p.Offset)
 	if err != nil {
-		log.Printf("failed to list comments: %v", err)
+		slog.Error("failed to list comments", "error", err, "post_id", postID)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

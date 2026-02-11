@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
-	"log"
+	"errors"
+	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,7 +20,7 @@ func main() {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 
 	cfg := config{
@@ -32,9 +34,21 @@ func main() {
 		jwtRefreshTokenTTL: time.Duration(env.GetInt("JWT_REFRESH_TOKEN_TTL")) * time.Hour,
 	}
 
+	var handler slog.Handler
+	if cfg.env == "production" {
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelInfo,
+		})
+	} else {
+		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		})
+	}
+	slog.SetDefault(slog.New(handler))
+
 	pool, err := pgxpool.New(ctx, cfg.db.dsn)
 	if err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 
 	app := &application{
@@ -48,22 +62,22 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		if err := app.run(h); err != nil {
-			log.Printf("server error: %v", err)
+		if err := app.run(h); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("server error", "error", err)
 		}
 	}()
 
-	log.Println("server started")
+	slog.Info("server started", "addr", cfg.addr, "env", cfg.env)
 
 	<-quit
-	log.Println("shutting down server gracefully")
+	slog.Info("shutting down server gracefully")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := app.shutdown(shutdownCtx); err != nil {
-		log.Printf("server forced to shutdown: %v", err)
+		slog.Error("server forced to shutdown", "error", err)
 	}
 
-	log.Println("server stopped")
+	slog.Info("server stopped")
 }

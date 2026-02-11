@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -149,18 +149,18 @@ func (app *application) run(h http.Handler) error {
 		IdleTimeout:  time.Minute,
 	}
 
-	log.Printf("server has started at %s", app.config.addr)
+	slog.Info("server has started", "addr", app.config.addr)
 
 	return app.server.ListenAndServe()
 }
 
 func (app *application) shutdown(ctx context.Context) error {
-	log.Println("shutting down http server...")
+	slog.Info("shutting down http server...")
 	if err := app.server.Shutdown(ctx); err != nil {
 		return err
 	}
 
-	log.Println("closing database connection...")
+	slog.Info("closing database connection...")
 	app.db.Close()
 
 	return nil
