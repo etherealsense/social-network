@@ -49,6 +49,13 @@ func (app *application) mount() http.Handler {
 	r.Use(httprate.LimitByIP(100, time.Minute))
 	r.Use(middleware.Timeout(time.Minute))
 
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+			next.ServeHTTP(w, r)
+		})
+	})
+
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
 	})
