@@ -25,14 +25,14 @@ func (h *handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	var req CreatePostRequest
 	if err := json.Read(r, &req); err != nil {
 		slog.Error("failed to read post request", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "failed to read post request", http.StatusBadRequest)
 		return
 	}
 
 	post, err := h.service.CreatePost(r.Context(), uid, req)
 	if err != nil {
 		slog.Error("failed to create post", "error", err, "user_id", uid)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "failed to create post", http.StatusInternalServerError)
 		return
 	}
 
@@ -51,9 +51,9 @@ func (h *handler) GetPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case ErrPostNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, "post not found", http.StatusNotFound)
 		default:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "failed to find post", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -74,7 +74,7 @@ func (h *handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	var req UpdatePostRequest
 	if err := json.Read(r, &req); err != nil {
 		slog.Error("failed to read update post request", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "failed to read update post request", http.StatusBadRequest)
 		return
 	}
 
@@ -82,12 +82,12 @@ func (h *handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case ErrPostNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, "post not found", http.StatusNotFound)
 		case ErrPostForbidden:
-			http.Error(w, err.Error(), http.StatusForbidden)
+			http.Error(w, "forbidden", http.StatusForbidden)
 		default:
 			slog.Error("failed to update post", "error", err, "post_id", id, "user_id", uid)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "failed to update post", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -109,12 +109,12 @@ func (h *handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case ErrPostNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, "post not found", http.StatusNotFound)
 		case ErrPostForbidden:
-			http.Error(w, err.Error(), http.StatusForbidden)
+			http.Error(w, "forbidden", http.StatusForbidden)
 		default:
 			slog.Error("failed to delete post", "error", err, "post_id", id, "user_id", uid)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "failed to delete post", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -136,7 +136,7 @@ func (h *handler) ListPostsByUserID(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.service.ListPostsByUserID(r.Context(), int32(id), p.Limit, p.Offset)
 	if err != nil {
 		slog.Error("failed to list posts", "error", err, "user_id", id)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "failed to list posts", http.StatusInternalServerError)
 		return
 	}
 

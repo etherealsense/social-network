@@ -33,12 +33,12 @@ func (h *handler) LikePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case ErrPostNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, "post not found", http.StatusNotFound)
 		case ErrAlreadyLiked:
-			http.Error(w, err.Error(), http.StatusConflict)
+			http.Error(w, "already liked this post", http.StatusConflict)
 		default:
 			slog.Error("failed to like post", "error", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "failed to like post", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -60,10 +60,10 @@ func (h *handler) UnlikePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case ErrPostNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, "post not found", http.StatusNotFound)
 		default:
 			slog.Error("failed to unlike post", "error", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "failed to unlike post", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -84,7 +84,7 @@ func (h *handler) ListLikesByPostID(w http.ResponseWriter, r *http.Request) {
 	likes, err := h.service.ListLikesByPostID(r.Context(), int32(postID), p.Limit, p.Offset)
 	if err != nil {
 		slog.Error("failed to list likes", "error", err, "post_id", postID)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "failed to list likes", http.StatusInternalServerError)
 		return
 	}
 

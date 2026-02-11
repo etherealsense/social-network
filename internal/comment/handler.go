@@ -32,14 +32,14 @@ func (h *handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	var req CreateCommentRequest
 	if err := json.Read(r, &req); err != nil {
 		slog.Error("failed to read comment request", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "failed to read comment request", http.StatusBadRequest)
 		return
 	}
 
 	comment, err := h.service.CreateComment(r.Context(), int32(postID), uid, req)
 	if err != nil {
 		slog.Error("failed to create comment", "error", err, "post_id", postID, "user_id", uid)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "failed to create comment", http.StatusInternalServerError)
 		return
 	}
 
@@ -58,9 +58,9 @@ func (h *handler) GetComment(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case ErrCommentNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, "comment not found", http.StatusNotFound)
 		default:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "failed to find comment", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -81,7 +81,7 @@ func (h *handler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	var req UpdateCommentRequest
 	if err := json.Read(r, &req); err != nil {
 		slog.Error("failed to read update comment request", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "failed to read update comment request", http.StatusBadRequest)
 		return
 	}
 
@@ -89,12 +89,12 @@ func (h *handler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case ErrCommentNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, "comment not found", http.StatusNotFound)
 		case ErrCommentForbidden:
-			http.Error(w, err.Error(), http.StatusForbidden)
+			http.Error(w, "forbidden", http.StatusForbidden)
 		default:
 			slog.Error("failed to update comment", "error", err, "comment_id", id, "user_id", uid)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "failed to update comment", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -116,12 +116,12 @@ func (h *handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case ErrCommentNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, "comment not found", http.StatusNotFound)
 		case ErrCommentForbidden:
-			http.Error(w, err.Error(), http.StatusForbidden)
+			http.Error(w, "forbidden", http.StatusForbidden)
 		default:
 			slog.Error("failed to delete comment", "error", err, "comment_id", id, "user_id", uid)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "failed to delete comment", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -142,7 +142,7 @@ func (h *handler) ListCommentsByPostID(w http.ResponseWriter, r *http.Request) {
 	comments, err := h.service.ListCommentsByPostID(r.Context(), int32(postID), p.Limit, p.Offset)
 	if err != nil {
 		slog.Error("failed to list comments", "error", err, "post_id", postID)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "failed to list comments", http.StatusInternalServerError)
 		return
 	}
 

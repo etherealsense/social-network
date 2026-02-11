@@ -50,9 +50,9 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case ErrUserAlreadyExists:
-			http.Error(w, err.Error(), http.StatusConflict)
+			http.Error(w, "user already exists", http.StatusConflict)
 		default:
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, "failed to register", http.StatusBadRequest)
 		}
 		return
 	}
@@ -82,7 +82,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := h.service.Login(r.Context(), req)
 	if err != nil {
 		if err == ErrInvalidCredentials {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		} else {
 			http.Error(w, "failed to login", http.StatusInternalServerError)
 		}

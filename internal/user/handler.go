@@ -21,7 +21,7 @@ func (h *handler) GetMe(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.service.FindUserByID(r.Context(), uid)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "user not found", http.StatusNotFound)
 		return
 	}
 
@@ -34,14 +34,14 @@ func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var req UpdateUserRequest
 	if err := json.Read(r, &req); err != nil {
 		slog.Error("failed to read user", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "failed to read user", http.StatusBadRequest)
 		return
 	}
 
 	user, err := h.service.UpdateUser(r.Context(), userID, req)
 	if err != nil {
 		slog.Error("failed to update user", "error", err, "user_id", userID)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "failed to update user", http.StatusInternalServerError)
 		return
 	}
 
