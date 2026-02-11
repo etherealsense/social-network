@@ -50,8 +50,10 @@ func (app *application) mount() http.Handler {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
+		repository := repo.New(app.db)
+
 		jwtAuth := auth.NewJWTAuth(app.config.jwtSecret, app.config.jwtAccessTokenTTL, app.config.jwtRefreshTokenTTL)
-		authService := auth.NewService(repo.New(app.db))
+		authService := auth.NewService(repository)
 		cookieConfig := auth.CookieConfig{
 			Secure:   app.config.env == "production",
 			SameSite: http.SameSiteLaxMode,
@@ -67,7 +69,7 @@ func (app *application) mount() http.Handler {
 			r.Post("/auth/logout", authHandler.Logout)
 		})
 
-		userService := user.NewService(repo.New(app.db))
+		userService := user.NewService(repository)
 		userHandler := user.NewHandler(userService)
 
 		r.Group(func(r chi.Router) {
@@ -77,7 +79,7 @@ func (app *application) mount() http.Handler {
 			r.Put("/users/me", userHandler.UpdateUser)
 		})
 
-		postService := post.NewService(repo.New(app.db))
+		postService := post.NewService(repository)
 		postHandler := post.NewHandler(postService)
 		r.Get("/posts/{id}", postHandler.GetPost)
 		r.Get("/posts/user/{user_id}", postHandler.ListPostsByUserID)
@@ -90,7 +92,7 @@ func (app *application) mount() http.Handler {
 			r.Delete("/posts/{id}", postHandler.DeletePost)
 		})
 
-		commentService := comment.NewService(repo.New(app.db))
+		commentService := comment.NewService(repository)
 		commentHandler := comment.NewHandler(commentService)
 		r.Get("/posts/{post_id}/comments", commentHandler.ListCommentsByPostID)
 		r.Get("/comments/{id}", commentHandler.GetComment)
@@ -103,7 +105,7 @@ func (app *application) mount() http.Handler {
 			r.Delete("/comments/{id}", commentHandler.DeleteComment)
 		})
 
-		followService := follow.NewService(repo.New(app.db))
+		followService := follow.NewService(repository)
 		followHandler := follow.NewHandler(followService)
 		r.Get("/users/{user_id}/followers", followHandler.ListFollowers)
 		r.Get("/users/{user_id}/following", followHandler.ListFollowing)
@@ -115,7 +117,7 @@ func (app *application) mount() http.Handler {
 			r.Delete("/users/{user_id}/follow", followHandler.UnfollowUser)
 		})
 
-		likeService := like.NewService(repo.New(app.db))
+		likeService := like.NewService(repository)
 		likeHandler := like.NewHandler(likeService)
 		r.Get("/posts/{post_id}/likes", likeHandler.ListLikesByPostID)
 
