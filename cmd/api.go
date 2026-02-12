@@ -15,6 +15,7 @@ import (
 	"github.com/etherealsense/social-network/internal/user"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -30,6 +31,7 @@ type config struct {
 	addr string
 	db   dbConfig
 	jwt  jwtConfig
+	cors corsConfig
 }
 
 type dbConfig struct {
@@ -42,6 +44,10 @@ type jwtConfig struct {
 	refreshTokenTTL time.Duration
 }
 
+type corsConfig struct {
+	origins []string
+}
+
 func (app *application) mount() http.Handler {
 	r := chi.NewRouter()
 
@@ -49,6 +55,14 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   app.config.cors.origins,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
 
 	r.Use(httprate.LimitByIP(100, time.Minute))
 	r.Use(middleware.Timeout(time.Minute))

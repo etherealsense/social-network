@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -33,6 +34,9 @@ func main() {
 			secret:          env.GetString("JWT_SECRET"),
 			accessTokenTTL:  time.Duration(env.GetInt("JWT_ACCESS_TOKEN_TTL")) * time.Hour,
 			refreshTokenTTL: time.Duration(env.GetInt("JWT_REFRESH_TOKEN_TTL")) * time.Hour,
+		},
+		cors: corsConfig{
+			origins: strings.Split(env.GetString("CORS_ORIGINS"), ","),
 		},
 	}
 
