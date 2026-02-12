@@ -15,7 +15,6 @@ type Config struct {
 	AccessTokenTTL  time.Duration
 	RefreshTokenTTL time.Duration
 	CookieSecure    bool
-	CookieSameSite  http.SameSite
 }
 
 type Handler struct {
@@ -39,7 +38,7 @@ func (h *Handler) setRefreshTokenCookie(w http.ResponseWriter, token string) {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   h.config.CookieSecure,
-		SameSite: h.config.CookieSameSite,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   int(h.jwtAuth.refreshTokenTTL.Seconds()),
 	})
 }
@@ -144,7 +143,7 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   h.config.CookieSecure,
-		SameSite: h.config.CookieSameSite,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
 	})
 

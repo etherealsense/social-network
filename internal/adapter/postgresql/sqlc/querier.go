@@ -6,6 +6,8 @@ package repo
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -14,9 +16,13 @@ type Querier interface {
 	CountFollowing(ctx context.Context, followerID int32) (int64, error)
 	CountLikesByPostID(ctx context.Context, postID int32) (int64, error)
 	CountPostsByUserID(ctx context.Context, userID int32) (int64, error)
+	CreateChat(ctx context.Context, createdAt pgtype.Timestamptz) (Chat, error)
+	CreateChatParticipant(ctx context.Context, arg CreateChatParticipantParams) error
 	CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error)
 	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	DeleteChat(ctx context.Context, id int32) error
+	DeleteChatParticipant(ctx context.Context, arg DeleteChatParticipantParams) error
 	DeleteComment(ctx context.Context, id int32) error
 	DeletePost(ctx context.Context, id int32) error
 	FindCommentByID(ctx context.Context, id int32) (Comment, error)
@@ -24,7 +30,12 @@ type Querier interface {
 	FindUserByEmail(ctx context.Context, email string) (User, error)
 	FindUserByID(ctx context.Context, id int32) (User, error)
 	FollowUser(ctx context.Context, arg FollowUserParams) (Follow, error)
+	GetChat(ctx context.Context, id int32) (Chat, error)
+	GetChatByTwoUsers(ctx context.Context, arg GetChatByTwoUsersParams) (Chat, error)
+	GetChatParticipantByChatIDAndUserID(ctx context.Context, arg GetChatParticipantByChatIDAndUserIDParams) (ChatParticipant, error)
 	LikePost(ctx context.Context, arg LikePostParams) (Like, error)
+	ListChatParticipantsByChatID(ctx context.Context, chatID int32) ([]ChatParticipant, error)
+	ListChatsByUserID(ctx context.Context, userID int32) ([]Chat, error)
 	ListCommentsByPostID(ctx context.Context, arg ListCommentsByPostIDParams) ([]Comment, error)
 	ListFollowers(ctx context.Context, arg ListFollowersParams) ([]Follow, error)
 	ListFollowing(ctx context.Context, arg ListFollowingParams) ([]Follow, error)

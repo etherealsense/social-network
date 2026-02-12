@@ -28,3 +28,17 @@ func GetInt(key string) int {
 
 	return valAsInt
 }
+
+func GetBool(key string) bool {
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		panic(fmt.Sprintf("env var %s is not set", key))
+	}
+
+	valAsBool, err := strconv.ParseBool(val)
+	if err != nil {
+		panic(fmt.Sprintf("env var %s is not a valid boolean: %v", key, err))
+	}
+
+	return valAsBool
+}

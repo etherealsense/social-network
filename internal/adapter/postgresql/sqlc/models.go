@@ -8,6 +8,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Chat struct {
+	ID        int32              `json:"id"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type ChatParticipant struct {
+	ChatID   int32              `json:"chat_id"`
+	UserID   int32              `json:"user_id"`
+	JoinedAt pgtype.Timestamptz `json:"joined_at"`
+}
+
 type Comment struct {
 	ID        int32              `json:"id"`
 	PostID    int32              `json:"post_id"`
@@ -29,6 +40,15 @@ type Like struct {
 	UserID    int32              `json:"user_id"`
 	PostID    int32              `json:"post_id"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type Message struct {
+	ID        int32              `json:"id"`
+	ChatID    int32              `json:"chat_id"`
+	SenderID  int32              `json:"sender_id"`
+	Content   string             `json:"content"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	IsRead    bool               `json:"is_read"`
 }
 
 type Post struct {

@@ -38,8 +38,7 @@ func main() {
 			JWTSecret:       env.GetString("JWT_SECRET"),
 			AccessTokenTTL:  time.Duration(env.GetInt("JWT_ACCESS_TOKEN_TTL")) * time.Hour,
 			RefreshTokenTTL: time.Duration(env.GetInt("JWT_REFRESH_TOKEN_TTL")) * time.Hour,
-			CookieSecure:    env.GetString("ENV") == "production",
-			CookieSameSite:  http.SameSiteLaxMode,
+			CookieSecure:    env.GetBool("COOKIE_SECURE"),
 		},
 	}
 
