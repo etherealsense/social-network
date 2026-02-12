@@ -6,9 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const (
-	defaultCost = 10
-)
+const defaultCost = 10
 
 var (
 	ErrInvalidPassword = errors.New("invalid password")

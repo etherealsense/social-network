@@ -30,18 +30,12 @@ type config struct {
 	env  string
 	addr string
 	db   dbConfig
-	jwt  jwtConfig
 	cors corsConfig
+	auth auth.Config
 }
 
 type dbConfig struct {
 	dsn string
-}
-
-type jwtConfig struct {
-	secret          string
-	accessTokenTTL  time.Duration
-	refreshTokenTTL time.Duration
 }
 
 type corsConfig struct {
@@ -81,13 +75,8 @@ func (app *application) mount() http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		repository := repo.New(app.db)
 
-		jwtAuth := auth.NewJWTAuth(app.config.jwt.secret, app.config.jwt.accessTokenTTL, app.config.jwt.refreshTokenTTL)
 		authService := auth.NewService(repository)
-		cookieConfig := auth.CookieConfig{
-			Secure:   app.config.env == "production",
-			SameSite: http.SameSiteLaxMode,
-		}
-		authHandler := auth.NewHandler(authService, jwtAuth, cookieConfig)
+		authHandler := auth.NewHandler(authService, app.config.auth)
 		r.Group(func(r chi.Router) {
 			r.Use(httprate.LimitByIP(10, time.Minute))
 			r.Post("/auth/register", authHandler.Register)
@@ -95,7 +84,7 @@ func (app *application) mount() http.Handler {
 		})
 
 		r.Group(func(r chi.Router) {
-			auth.RequireAuth(jwtAuth)(r)
+			auth.RequireAuth(authHandler)(r)
 			r.Post("/auth/refresh", authHandler.Refresh)
 			r.Post("/auth/logout", authHandler.Logout)
 		})
@@ -104,7 +93,7 @@ func (app *application) mount() http.Handler {
 		userHandler := user.NewHandler(userService)
 
 		r.Group(func(r chi.Router) {
-			auth.RequireAuth(jwtAuth)(r)
+			auth.RequireAuth(authHandler)(r)
 			r.Get("/users/me", userHandler.GetMe)
 			r.Put("/users/me", userHandler.UpdateUser)
 		})
@@ -115,7 +104,7 @@ func (app *application) mount() http.Handler {
 		r.Get("/posts/user/{user_id}", postHandler.ListPostsByUserID)
 
 		r.Group(func(r chi.Router) {
-			auth.RequireAuth(jwtAuth)(r)
+			auth.RequireAuth(authHandler)(r)
 			r.Post("/posts", postHandler.CreatePost)
 			r.Put("/posts/{id}", postHandler.UpdatePost)
 			r.Delete("/posts/{id}", postHandler.DeletePost)
@@ -127,7 +116,7 @@ func (app *application) mount() http.Handler {
 		r.Get("/comments/{id}", commentHandler.GetComment)
 
 		r.Group(func(r chi.Router) {
-			auth.RequireAuth(jwtAuth)(r)
+			auth.RequireAuth(authHandler)(r)
 			r.Post("/posts/{post_id}/comments", commentHandler.CreateComment)
 			r.Put("/comments/{id}", commentHandler.UpdateComment)
 			r.Delete("/comments/{id}", commentHandler.DeleteComment)
@@ -139,7 +128,7 @@ func (app *application) mount() http.Handler {
 		r.Get("/users/{user_id}/following", followHandler.ListFollowing)
 
 		r.Group(func(r chi.Router) {
-			auth.RequireAuth(jwtAuth)(r)
+			auth.RequireAuth(authHandler)(r)
 			r.Post("/users/{user_id}/follow", followHandler.FollowUser)
 			r.Delete("/users/{user_id}/follow", followHandler.UnfollowUser)
 		})
@@ -149,7 +138,7 @@ func (app *application) mount() http.Handler {
 		r.Get("/posts/{post_id}/likes", likeHandler.ListLikesByPostID)
 
 		r.Group(func(r chi.Router) {
-			auth.RequireAuth(jwtAuth)(r)
+			auth.RequireAuth(authHandler)(r)
 			r.Post("/posts/{post_id}/like", likeHandler.LikePost)
 			r.Delete("/posts/{post_id}/like", likeHandler.UnlikePost)
 		})

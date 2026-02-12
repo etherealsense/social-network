@@ -3,28 +3,32 @@ package auth
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/etherealsense/social-network/pkg/json"
 )
 
 const refreshTokenCookieName = "refresh_token"
 
-type CookieConfig struct {
-	Secure   bool
-	SameSite http.SameSite
+type Config struct {
+	JWTSecret       string
+	AccessTokenTTL  time.Duration
+	RefreshTokenTTL time.Duration
+	CookieSecure    bool
+	CookieSameSite  http.SameSite
 }
 
 type Handler struct {
-	service      Service
-	jwtAuth      *JWTAuth
-	cookieConfig CookieConfig
+	service Service
+	jwtAuth *JWTAuth
+	config  Config
 }
 
-func NewHandler(service Service, jwtAuth *JWTAuth, cookieConfig CookieConfig) *Handler {
+func NewHandler(service Service, cfg Config) *Handler {
 	return &Handler{
-		service:      service,
-		jwtAuth:      jwtAuth,
-		cookieConfig: cookieConfig,
+		service: service,
+		jwtAuth: newJWTAuth(cfg),
+		config:  cfg,
 	}
 }
 
@@ -34,8 +38,8 @@ func (h *Handler) setRefreshTokenCookie(w http.ResponseWriter, token string) {
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   h.cookieConfig.Secure,
-		SameSite: h.cookieConfig.SameSite,
+		Secure:   h.config.CookieSecure,
+		SameSite: h.config.CookieSameSite,
 		MaxAge:   int(h.jwtAuth.refreshTokenTTL.Seconds()),
 	})
 }
@@ -139,8 +143,8 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   h.cookieConfig.Secure,
-		SameSite: h.cookieConfig.SameSite,
+		Secure:   h.config.CookieSecure,
+		SameSite: h.config.CookieSameSite,
 		MaxAge:   -1,
 	})
 

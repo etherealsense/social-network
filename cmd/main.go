@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/etherealsense/social-network/internal/auth"
 	"github.com/etherealsense/social-network/pkg/env"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -30,13 +31,15 @@ func main() {
 		db: dbConfig{
 			dsn: env.GetString("GOOSE_DBSTRING"),
 		},
-		jwt: jwtConfig{
-			secret:          env.GetString("JWT_SECRET"),
-			accessTokenTTL:  time.Duration(env.GetInt("JWT_ACCESS_TOKEN_TTL")) * time.Hour,
-			refreshTokenTTL: time.Duration(env.GetInt("JWT_REFRESH_TOKEN_TTL")) * time.Hour,
-		},
 		cors: corsConfig{
 			origins: strings.Split(env.GetString("CORS_ORIGINS"), ","),
+		},
+		auth: auth.Config{
+			JWTSecret:       env.GetString("JWT_SECRET"),
+			AccessTokenTTL:  time.Duration(env.GetInt("JWT_ACCESS_TOKEN_TTL")) * time.Hour,
+			RefreshTokenTTL: time.Duration(env.GetInt("JWT_REFRESH_TOKEN_TTL")) * time.Hour,
+			CookieSecure:    env.GetString("ENV") == "production",
+			CookieSameSite:  http.SameSiteLaxMode,
 		},
 	}
 

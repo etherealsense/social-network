@@ -21,11 +21,11 @@ type JWTAuth struct {
 	refreshTokenTTL time.Duration
 }
 
-func NewJWTAuth(secret string, accessTTL, refreshTTL time.Duration) *JWTAuth {
+func newJWTAuth(cfg Config) *JWTAuth {
 	return &JWTAuth{
-		tokenAuth:       jwtauth.New("HS256", []byte(secret), nil),
-		accessTokenTTL:  accessTTL,
-		refreshTokenTTL: refreshTTL,
+		tokenAuth:       jwtauth.New("HS256", []byte(cfg.JWTSecret), nil),
+		accessTokenTTL:  cfg.AccessTokenTTL,
+		refreshTokenTTL: cfg.RefreshTokenTTL,
 	}
 }
 
