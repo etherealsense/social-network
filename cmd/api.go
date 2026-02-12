@@ -8,6 +8,7 @@ import (
 
 	repo "github.com/etherealsense/social-network/internal/adapter/postgresql/sqlc"
 	"github.com/etherealsense/social-network/internal/auth"
+	"github.com/etherealsense/social-network/internal/chat"
 	"github.com/etherealsense/social-network/internal/comment"
 	"github.com/etherealsense/social-network/internal/follow"
 	"github.com/etherealsense/social-network/internal/like"
@@ -141,6 +142,15 @@ func (app *application) mount() http.Handler {
 			auth.RequireAuth(authHandler)(r)
 			r.Post("/posts/{post_id}/like", likeHandler.LikePost)
 			r.Delete("/posts/{post_id}/like", likeHandler.UnlikePost)
+		})
+
+		chatService := chat.NewService(repository)
+		chatHandler := chat.NewHandler(chatService)
+
+		r.Group(func(r chi.Router) {
+			auth.RequireAuth(authHandler)(r)
+			r.Post("/chats", chatHandler.CreateChat)
+			r.Get("/chats", chatHandler.ListChats)
 		})
 	})
 
