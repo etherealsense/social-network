@@ -3,9 +3,11 @@ package chat
 import (
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/etherealsense/social-network/internal/auth"
 	"github.com/etherealsense/social-network/pkg/json"
+	"github.com/go-chi/chi/v5"
 )
 
 type Handler struct {
@@ -56,4 +58,22 @@ func (h *Handler) ListChats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.Write(w, http.StatusOK, chats)
+}
+
+func (h *Handler) ListParticipants(w http.ResponseWriter, r *http.Request) {
+	chatIDStr := chi.URLParam(r, "chat_id")
+	chatID, err := strconv.Atoi(chatIDStr)
+	if err != nil {
+		http.Error(w, "invalid chat id", http.StatusBadRequest)
+		return
+	}
+
+	participants, err := h.service.ListParticipantsByChatID(r.Context(), int32(chatID))
+	if err != nil {
+		slog.Error("failed to list participants", "error", err, "chat_id", chatID)
+		http.Error(w, "failed to list participants", http.StatusInternalServerError)
+		return
+	}
+
+	json.Write(w, http.StatusOK, participants)
 }

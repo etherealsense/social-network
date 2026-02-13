@@ -151,6 +151,7 @@ func (app *application) mount() http.Handler {
 			auth.RequireAuth(authHandler)(r)
 			r.Post("/chats", chatHandler.CreateChat)
 			r.Get("/chats", chatHandler.ListChats)
+			r.Get("/chats/{chat_id}/participants", chatHandler.ListParticipants)
 		})
 	})
 
