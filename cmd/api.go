@@ -75,13 +75,11 @@ func (app *application) mount() http.Handler {
 		chatHub := chat.NewHub()
 		chatHandler := chat.NewHandler(chatService, chatHub)
 
-		// WebSocket route — no timeout or body limit middleware.
 		r.Group(func(r chi.Router) {
 			auth.RequireAuth(authHandler)(r)
 			r.Get("/chats/{chat_id}/ws", chatHandler.HandleWebSocket)
 		})
 
-		// REST routes with timeout and body limit.
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.Timeout(time.Minute))
 			r.Use(func(next http.Handler) http.Handler {
