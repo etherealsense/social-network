@@ -57,11 +57,17 @@ func (q *Queries) GetChatParticipantByChatIDAndUserID(ctx context.Context, arg G
 }
 
 const listChatParticipantsByChatID = `-- name: ListChatParticipantsByChatID :many
-SELECT chat_id, user_id, joined_at FROM chat_participants WHERE chat_id = $1 ORDER BY joined_at
+SELECT chat_id, user_id, joined_at FROM chat_participants WHERE chat_id = $1 ORDER BY joined_at LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) ListChatParticipantsByChatID(ctx context.Context, chatID int32) ([]ChatParticipant, error) {
-	rows, err := q.db.Query(ctx, listChatParticipantsByChatID, chatID)
+type ListChatParticipantsByChatIDParams struct {
+	ChatID int32 `json:"chat_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListChatParticipantsByChatID(ctx context.Context, arg ListChatParticipantsByChatIDParams) ([]ChatParticipant, error) {
+	rows, err := q.db.Query(ctx, listChatParticipantsByChatID, arg.ChatID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

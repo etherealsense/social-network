@@ -13,7 +13,8 @@ JOIN chat_participants cp2 ON cp2.chat_id = c.id AND cp2.user_id = $2;
 SELECT c.id, c.created_at FROM chats c
 JOIN chat_participants cp ON cp.chat_id = c.id
 WHERE cp.user_id = $1
-ORDER BY c.created_at DESC;
+ORDER BY c.created_at DESC
+LIMIT $2 OFFSET $3;
 
 -- name: DeleteChat :exec
 DELETE FROM chats WHERE id = $1;

@@ -65,10 +65,17 @@ SELECT c.id, c.created_at FROM chats c
 JOIN chat_participants cp ON cp.chat_id = c.id
 WHERE cp.user_id = $1
 ORDER BY c.created_at DESC
+LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) ListChatsByUserID(ctx context.Context, userID int32) ([]Chat, error) {
-	rows, err := q.db.Query(ctx, listChatsByUserID, userID)
+type ListChatsByUserIDParams struct {
+	UserID int32 `json:"user_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListChatsByUserID(ctx context.Context, arg ListChatsByUserIDParams) ([]Chat, error) {
+	rows, err := q.db.Query(ctx, listChatsByUserID, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

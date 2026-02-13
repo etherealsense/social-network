@@ -7,6 +7,7 @@ import (
 
 	"github.com/etherealsense/social-network/internal/auth"
 	"github.com/etherealsense/social-network/pkg/json"
+	"github.com/etherealsense/social-network/pkg/pagination"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -49,8 +50,9 @@ func (h *Handler) CreateChat(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) ListChats(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
+	p := pagination.Parse(r)
 
-	chats, err := h.service.ListChatsByUserID(r.Context(), uid)
+	chats, err := h.service.ListChatsByUserID(r.Context(), uid, p.Limit, p.Offset)
 	if err != nil {
 		slog.Error("failed to list chats", "error", err, "user_id", uid)
 		http.Error(w, "failed to list chats", http.StatusInternalServerError)
@@ -68,7 +70,9 @@ func (h *Handler) ListParticipants(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	participants, err := h.service.ListParticipantsByChatID(r.Context(), int32(chatID))
+	p := pagination.Parse(r)
+
+	participants, err := h.service.ListParticipantsByChatID(r.Context(), int32(chatID), p.Limit, p.Offset)
 	if err != nil {
 		slog.Error("failed to list participants", "error", err, "chat_id", chatID)
 		http.Error(w, "failed to list participants", http.StatusInternalServerError)

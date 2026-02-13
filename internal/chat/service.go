@@ -18,8 +18,8 @@ var (
 
 type Service interface {
 	CreateChat(ctx context.Context, userID int32, req CreateChatRequest) (repo.Chat, error)
-	ListChatsByUserID(ctx context.Context, userID int32) ([]repo.Chat, error)
-	ListParticipantsByChatID(ctx context.Context, chatID int32) ([]repo.ChatParticipant, error)
+	ListChatsByUserID(ctx context.Context, userID, limit, offset int32) ([]repo.Chat, error)
+	ListParticipantsByChatID(ctx context.Context, chatID, limit, offset int32) ([]repo.ChatParticipant, error)
 }
 
 type svc struct {
@@ -76,15 +76,18 @@ func (s *svc) CreateChat(ctx context.Context, userID int32, req CreateChatReques
 	return chat, nil
 }
 
-func (s *svc) ListChatsByUserID(ctx context.Context, userID int32) ([]repo.Chat, error) {
-	return s.repo.ListChatsByUserID(ctx, userID)
+func (s *svc) ListChatsByUserID(ctx context.Context, userID, limit, offset int32) ([]repo.Chat, error) {
+	return s.repo.ListChatsByUserID(ctx, repo.ListChatsByUserIDParams{
+		UserID: userID,
+		Limit:  limit,
+		Offset: offset,
+	})
 }
 
-func (s *svc) ListParticipantsByChatID(ctx context.Context, chatID int32) ([]repo.ChatParticipant, error) {
-	participants, err := s.repo.ListChatParticipantsByChatID(ctx, chatID)
-	if err != nil {
-		return nil, err
-	}
-
-	return participants, nil
+func (s *svc) ListParticipantsByChatID(ctx context.Context, chatID, limit, offset int32) ([]repo.ChatParticipant, error) {
+	return s.repo.ListChatParticipantsByChatID(ctx, repo.ListChatParticipantsByChatIDParams{
+		ChatID: chatID,
+		Limit:  limit,
+		Offset: offset,
+	})
 }
