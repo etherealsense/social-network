@@ -6,6 +6,7 @@ import (
 
 	repo "github.com/etherealsense/social-network/internal/adapter/postgresql/sqlc"
 	"github.com/etherealsense/social-network/pkg/crypto"
+	"github.com/etherealsense/social-network/pkg/database"
 	"github.com/etherealsense/social-network/pkg/validator"
 )
 
@@ -34,11 +35,6 @@ func (s *svc) Register(ctx context.Context, req RegisterRequest) (repo.CreateUse
 		return repo.CreateUserRow{}, err
 	}
 
-	_, err = s.repo.FindUserByEmail(ctx, req.Email)
-	if err == nil {
-		return repo.CreateUserRow{}, ErrUserAlreadyExists
-	}
-
 	err = validator.ValidatePassword(req.Password)
 	if err != nil {
 		return repo.CreateUserRow{}, err
@@ -55,6 +51,10 @@ func (s *svc) Register(ctx context.Context, req RegisterRequest) (repo.CreateUse
 		Password: hashedPassword,
 	})
 	if err != nil {
+		if database.IsUniqueViolation(err) {
+			return repo.CreateUserRow{}, ErrUserAlreadyExists
+		}
+
 		return repo.CreateUserRow{}, err
 	}
 
