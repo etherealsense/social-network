@@ -14,12 +14,16 @@ var (
 	ErrChatNotFound      = errors.New("chat not found")
 	ErrSelfChat          = errors.New("cannot create chat with yourself")
 	ErrUserNotFound      = errors.New("user not found")
+	ErrNotParticipant    = errors.New("user is not a participant of this chat")
 )
 
 type Service interface {
 	CreateChat(ctx context.Context, userID int32, req CreateChatRequest) (repo.Chat, error)
 	ListChatsByUserID(ctx context.Context, userID, limit, offset int32) ([]repo.Chat, error)
 	ListParticipantsByChatID(ctx context.Context, chatID, limit, offset int32) ([]repo.ChatParticipant, error)
+	CreateMessage(ctx context.Context, chatID, senderID int32, content string) (repo.Message, error)
+	ListMessagesByChatID(ctx context.Context, chatID, limit, offset int32) ([]repo.Message, error)
+	IsParticipant(ctx context.Context, chatID, userID int32) error
 }
 
 type svc struct {
@@ -90,4 +94,35 @@ func (s *svc) ListParticipantsByChatID(ctx context.Context, chatID, limit, offse
 		Limit:  limit,
 		Offset: offset,
 	})
+}
+
+func (s *svc) CreateMessage(ctx context.Context, chatID, senderID int32, content string) (repo.Message, error) {
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
+	return s.repo.CreateMessage(ctx, repo.CreateMessageParams{
+		ChatID:    chatID,
+		SenderID:  senderID,
+		Content:   content,
+		CreatedAt: now,
+		IsRead:    false,
+	})
+}
+
+func (s *svc) ListMessagesByChatID(ctx context.Context, chatID, limit, offset int32) ([]repo.Message, error) {
+	return s.repo.ListMessagesByChatID(ctx, repo.ListMessagesByChatIDParams{
+		ChatID: chatID,
+		Limit:  limit,
+		Offset: offset,
+	})
+}
+
+func (s *svc) IsParticipant(ctx context.Context, chatID, userID int32) error {
+	_, err := s.repo.GetChatParticipantByChatIDAndUserID(ctx, repo.GetChatParticipantByChatIDAndUserIDParams{
+		ChatID: chatID,
+		UserID: userID,
+	})
+	if err != nil {
+		return ErrNotParticipant
+	}
+	return nil
 }

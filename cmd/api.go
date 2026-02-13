@@ -60,14 +60,6 @@ func (app *application) mount() http.Handler {
 	}))
 
 	r.Use(httprate.LimitByIP(100, time.Minute))
-	r.Use(middleware.Timeout(time.Minute))
-
-	r.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
-			next.ServeHTTP(w, r)
-		})
-	})
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
@@ -78,80 +70,100 @@ func (app *application) mount() http.Handler {
 
 		authService := auth.NewService(repository)
 		authHandler := auth.NewHandler(authService, app.config.auth)
-		r.Group(func(r chi.Router) {
-			r.Use(httprate.LimitByIP(10, time.Minute))
-			r.Post("/auth/register", authHandler.Register)
-			r.Post("/auth/login", authHandler.Login)
-		})
-
-		r.Group(func(r chi.Router) {
-			auth.RequireAuth(authHandler)(r)
-			r.Post("/auth/refresh", authHandler.Refresh)
-			r.Post("/auth/logout", authHandler.Logout)
-		})
-
-		userService := user.NewService(repository)
-		userHandler := user.NewHandler(userService)
-
-		r.Group(func(r chi.Router) {
-			auth.RequireAuth(authHandler)(r)
-			r.Get("/users/me", userHandler.GetMe)
-			r.Put("/users/me", userHandler.UpdateUser)
-		})
-
-		postService := post.NewService(repository)
-		postHandler := post.NewHandler(postService)
-		r.Get("/posts/{id}", postHandler.GetPost)
-		r.Get("/posts/user/{user_id}", postHandler.ListPostsByUserID)
-
-		r.Group(func(r chi.Router) {
-			auth.RequireAuth(authHandler)(r)
-			r.Post("/posts", postHandler.CreatePost)
-			r.Put("/posts/{id}", postHandler.UpdatePost)
-			r.Delete("/posts/{id}", postHandler.DeletePost)
-		})
-
-		commentService := comment.NewService(repository)
-		commentHandler := comment.NewHandler(commentService)
-		r.Get("/posts/{post_id}/comments", commentHandler.ListCommentsByPostID)
-		r.Get("/comments/{id}", commentHandler.GetComment)
-
-		r.Group(func(r chi.Router) {
-			auth.RequireAuth(authHandler)(r)
-			r.Post("/posts/{post_id}/comments", commentHandler.CreateComment)
-			r.Put("/comments/{id}", commentHandler.UpdateComment)
-			r.Delete("/comments/{id}", commentHandler.DeleteComment)
-		})
-
-		followService := follow.NewService(repository)
-		followHandler := follow.NewHandler(followService)
-		r.Get("/users/{user_id}/followers", followHandler.ListFollowers)
-		r.Get("/users/{user_id}/following", followHandler.ListFollowing)
-
-		r.Group(func(r chi.Router) {
-			auth.RequireAuth(authHandler)(r)
-			r.Post("/users/{user_id}/follow", followHandler.FollowUser)
-			r.Delete("/users/{user_id}/follow", followHandler.UnfollowUser)
-		})
-
-		likeService := like.NewService(repository)
-		likeHandler := like.NewHandler(likeService)
-		r.Get("/posts/{post_id}/likes", likeHandler.ListLikesByPostID)
-
-		r.Group(func(r chi.Router) {
-			auth.RequireAuth(authHandler)(r)
-			r.Post("/posts/{post_id}/like", likeHandler.LikePost)
-			r.Delete("/posts/{post_id}/like", likeHandler.UnlikePost)
-		})
 
 		chatService := chat.NewService(repository)
-		chatHandler := chat.NewHandler(chatService)
+		chatHub := chat.NewHub()
+		chatHandler := chat.NewHandler(chatService, chatHub)
 
+		// WebSocket route — no timeout or body limit middleware.
 		r.Group(func(r chi.Router) {
 			auth.RequireAuth(authHandler)(r)
-			r.Post("/chats", chatHandler.CreateChat)
-			r.Get("/chats", chatHandler.ListChats)
-			r.Get("/chats/{chat_id}/participants", chatHandler.ListParticipants)
+			r.Get("/chats/{chat_id}/ws", chatHandler.HandleWebSocket)
+		})
+
+		// REST routes with timeout and body limit.
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.Timeout(time.Minute))
+			r.Use(func(next http.Handler) http.Handler {
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+					next.ServeHTTP(w, r)
+				})
+			})
+
+			r.Group(func(r chi.Router) {
+				r.Use(httprate.LimitByIP(10, time.Minute))
+				r.Post("/auth/register", authHandler.Register)
+				r.Post("/auth/login", authHandler.Login)
+			})
+
+			r.Group(func(r chi.Router) {
+				auth.RequireAuth(authHandler)(r)
+				r.Post("/auth/refresh", authHandler.Refresh)
+				r.Post("/auth/logout", authHandler.Logout)
+			})
+
+			userService := user.NewService(repository)
+			userHandler := user.NewHandler(userService)
+
+			r.Group(func(r chi.Router) {
+				auth.RequireAuth(authHandler)(r)
+				r.Get("/users/me", userHandler.GetMe)
+				r.Put("/users/me", userHandler.UpdateUser)
+			})
+
+			postService := post.NewService(repository)
+			postHandler := post.NewHandler(postService)
+			r.Get("/posts/{id}", postHandler.GetPost)
+			r.Get("/posts/user/{user_id}", postHandler.ListPostsByUserID)
+
+			r.Group(func(r chi.Router) {
+				auth.RequireAuth(authHandler)(r)
+				r.Post("/posts", postHandler.CreatePost)
+				r.Put("/posts/{id}", postHandler.UpdatePost)
+				r.Delete("/posts/{id}", postHandler.DeletePost)
+			})
+
+			commentService := comment.NewService(repository)
+			commentHandler := comment.NewHandler(commentService)
+			r.Get("/posts/{post_id}/comments", commentHandler.ListCommentsByPostID)
+			r.Get("/comments/{id}", commentHandler.GetComment)
+
+			r.Group(func(r chi.Router) {
+				auth.RequireAuth(authHandler)(r)
+				r.Post("/posts/{post_id}/comments", commentHandler.CreateComment)
+				r.Put("/comments/{id}", commentHandler.UpdateComment)
+				r.Delete("/comments/{id}", commentHandler.DeleteComment)
+			})
+
+			followService := follow.NewService(repository)
+			followHandler := follow.NewHandler(followService)
+			r.Get("/users/{user_id}/followers", followHandler.ListFollowers)
+			r.Get("/users/{user_id}/following", followHandler.ListFollowing)
+
+			r.Group(func(r chi.Router) {
+				auth.RequireAuth(authHandler)(r)
+				r.Post("/users/{user_id}/follow", followHandler.FollowUser)
+				r.Delete("/users/{user_id}/follow", followHandler.UnfollowUser)
+			})
+
+			likeService := like.NewService(repository)
+			likeHandler := like.NewHandler(likeService)
+			r.Get("/posts/{post_id}/likes", likeHandler.ListLikesByPostID)
+
+			r.Group(func(r chi.Router) {
+				auth.RequireAuth(authHandler)(r)
+				r.Post("/posts/{post_id}/like", likeHandler.LikePost)
+				r.Delete("/posts/{post_id}/like", likeHandler.UnlikePost)
+			})
+
+			r.Group(func(r chi.Router) {
+				auth.RequireAuth(authHandler)(r)
+				r.Post("/chats", chatHandler.CreateChat)
+				r.Get("/chats", chatHandler.ListChats)
+				r.Get("/chats/{chat_id}/participants", chatHandler.ListParticipants)
+				r.Get("/chats/{chat_id}/messages", chatHandler.ListMessages)
+			})
 		})
 	})
 

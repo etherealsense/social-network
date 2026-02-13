@@ -19,6 +19,7 @@ type Querier interface {
 	CreateChat(ctx context.Context, createdAt pgtype.Timestamptz) (Chat, error)
 	CreateChatParticipant(ctx context.Context, arg CreateChatParticipantParams) error
 	CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error)
+	CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error)
 	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	DeleteChat(ctx context.Context, id int32) error
@@ -40,6 +41,7 @@ type Querier interface {
 	ListFollowers(ctx context.Context, arg ListFollowersParams) ([]Follow, error)
 	ListFollowing(ctx context.Context, arg ListFollowingParams) ([]Follow, error)
 	ListLikesByPostID(ctx context.Context, arg ListLikesByPostIDParams) ([]Like, error)
+	ListMessagesByChatID(ctx context.Context, arg ListMessagesByChatIDParams) ([]Message, error)
 	ListPostsByUserID(ctx context.Context, arg ListPostsByUserIDParams) ([]Post, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	UnfollowUser(ctx context.Context, arg UnfollowUserParams) error
