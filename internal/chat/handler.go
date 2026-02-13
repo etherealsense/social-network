@@ -33,6 +33,8 @@ func (h *Handler) CreateChat(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "cannot create chat with yourself", http.StatusBadRequest)
 		case ErrChatAlreadyExists:
 			http.Error(w, "chat already exists between these users", http.StatusConflict)
+		case ErrUserNotFound:
+			http.Error(w, "user not found", http.StatusNotFound)
 		default:
 			slog.Error("failed to create chat", "error", err, "user_id", uid)
 			http.Error(w, "failed to create chat", http.StatusInternalServerError)

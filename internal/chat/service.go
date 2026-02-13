@@ -13,6 +13,7 @@ var (
 	ErrChatAlreadyExists = errors.New("chat already exists between these users")
 	ErrChatNotFound      = errors.New("chat not found")
 	ErrSelfChat          = errors.New("cannot create chat with yourself")
+	ErrUserNotFound      = errors.New("user not found")
 )
 
 type Service interface {
@@ -33,7 +34,12 @@ func (s *svc) CreateChat(ctx context.Context, userID int32, req CreateChatReques
 		return repo.Chat{}, ErrSelfChat
 	}
 
-	_, err := s.repo.GetChatByTwoUsers(ctx, repo.GetChatByTwoUsersParams{
+	_, err := s.repo.FindUserByID(ctx, req.UserID)
+	if err != nil {
+		return repo.Chat{}, ErrUserNotFound
+	}
+
+	_, err = s.repo.GetChatByTwoUsers(ctx, repo.GetChatByTwoUsersParams{
 		UserID:   userID,
 		UserID_2: req.UserID,
 	})
