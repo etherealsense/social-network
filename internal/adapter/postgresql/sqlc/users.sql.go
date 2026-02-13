@@ -61,17 +61,24 @@ func (q *Queries) FindUserByEmail(ctx context.Context, email string) (User, erro
 }
 
 const findUserByID = `-- name: FindUserByID :one
-SELECT id, name, email, password, created_at, updated_at FROM users WHERE id = $1
+SELECT id, name, email, created_at, updated_at FROM users WHERE id = $1
 `
 
-func (q *Queries) FindUserByID(ctx context.Context, id int32) (User, error) {
+type FindUserByIDRow struct {
+	ID        int32              `json:"id"`
+	Name      string             `json:"name"`
+	Email     string             `json:"email"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) FindUserByID(ctx context.Context, id int32) (FindUserByIDRow, error) {
 	row := q.db.QueryRow(ctx, findUserByID, id)
-	var i User
+	var i FindUserByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Email,
-		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -79,23 +86,30 @@ func (q *Queries) FindUserByID(ctx context.Context, id int32) (User, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email, password, created_at, updated_at FROM users
+SELECT id, name, email, created_at, updated_at FROM users
 `
 
-func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
+type ListUsersRow struct {
+	ID        int32              `json:"id"`
+	Name      string             `json:"name"`
+	Email     string             `json:"email"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 	rows, err := q.db.Query(ctx, listUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []ListUsersRow
 	for rows.Next() {
-		var i User
+		var i ListUsersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
 			&i.Email,
-			&i.Password,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

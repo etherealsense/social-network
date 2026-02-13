@@ -10,6 +10,7 @@ import (
 	"github.com/etherealsense/social-network/internal/auth"
 	"github.com/etherealsense/social-network/internal/chat"
 	"github.com/etherealsense/social-network/internal/comment"
+	"github.com/etherealsense/social-network/internal/feed"
 	"github.com/etherealsense/social-network/internal/follow"
 	"github.com/etherealsense/social-network/internal/like"
 	"github.com/etherealsense/social-network/internal/post"
@@ -143,6 +144,14 @@ func (app *application) mount() http.Handler {
 				auth.RequireAuth(authHandler)(r)
 				r.Post("/users/{user_id}/follow", followHandler.FollowUser)
 				r.Delete("/users/{user_id}/follow", followHandler.UnfollowUser)
+			})
+
+			feedService := feed.NewService(repository)
+			feedHandler := feed.NewHandler(feedService)
+
+			r.Group(func(r chi.Router) {
+				auth.RequireAuth(authHandler)(r)
+				r.Get("/feed", feedHandler.GetFeed)
 			})
 
 			likeService := like.NewService(repository)

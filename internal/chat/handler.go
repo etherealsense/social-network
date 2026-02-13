@@ -112,9 +112,6 @@ func (h *Handler) ListMessages(w http.ResponseWriter, r *http.Request) {
 	jsonpkg.Write(w, http.StatusOK, messages)
 }
 
-// HandleWebSocket upgrades the connection and allows sending/receiving messages in real time.
-// Clients connect to GET /api/v1/chats/{chat_id}/ws and send JSON: {"content": "hello"}
-// The server broadcasts MessageResponse JSON to all connected participants.
 func (h *Handler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	uid := auth.UserIDFromContext(r.Context())
 

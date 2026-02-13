@@ -16,7 +16,7 @@ var (
 )
 
 type Service interface {
-	ListUsers(ctx context.Context) ([]repo.User, error)
+	ListUsers(ctx context.Context) ([]repo.ListUsersRow, error)
 	FindUserByID(ctx context.Context, id int32) (UserResponse, error)
 	UpdateUser(ctx context.Context, id int32, req UpdateUserRequest) (repo.UpdateUserRow, error)
 }
@@ -29,7 +29,7 @@ func NewService(repo repo.Querier) Service {
 	return &svc{repo: repo}
 }
 
-func (s *svc) ListUsers(ctx context.Context) ([]repo.User, error) {
+func (s *svc) ListUsers(ctx context.Context) ([]repo.ListUsersRow, error) {
 	return s.repo.ListUsers(ctx)
 }
 

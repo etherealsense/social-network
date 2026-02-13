@@ -29,11 +29,12 @@ type Querier interface {
 	FindCommentByID(ctx context.Context, id int32) (Comment, error)
 	FindPostByID(ctx context.Context, id int32) (Post, error)
 	FindUserByEmail(ctx context.Context, email string) (User, error)
-	FindUserByID(ctx context.Context, id int32) (User, error)
+	FindUserByID(ctx context.Context, id int32) (FindUserByIDRow, error)
 	FollowUser(ctx context.Context, arg FollowUserParams) (Follow, error)
 	GetChat(ctx context.Context, id int32) (Chat, error)
 	GetChatByTwoUsers(ctx context.Context, arg GetChatByTwoUsersParams) (Chat, error)
 	GetChatParticipantByChatIDAndUserID(ctx context.Context, arg GetChatParticipantByChatIDAndUserIDParams) (ChatParticipant, error)
+	GetFeed(ctx context.Context, arg GetFeedParams) ([]GetFeedRow, error)
 	LikePost(ctx context.Context, arg LikePostParams) (Like, error)
 	ListChatParticipantsByChatID(ctx context.Context, arg ListChatParticipantsByChatIDParams) ([]ChatParticipant, error)
 	ListChatsByUserID(ctx context.Context, arg ListChatsByUserIDParams) ([]Chat, error)
@@ -43,7 +44,7 @@ type Querier interface {
 	ListLikesByPostID(ctx context.Context, arg ListLikesByPostIDParams) ([]Like, error)
 	ListMessagesByChatID(ctx context.Context, arg ListMessagesByChatIDParams) ([]Message, error)
 	ListPostsByUserID(ctx context.Context, arg ListPostsByUserIDParams) ([]Post, error)
-	ListUsers(ctx context.Context) ([]User, error)
+	ListUsers(ctx context.Context) ([]ListUsersRow, error)
 	UnfollowUser(ctx context.Context, arg UnfollowUserParams) error
 	UnlikePost(ctx context.Context, arg UnlikePostParams) error
 	UpdateComment(ctx context.Context, arg UpdateCommentParams) (Comment, error)
