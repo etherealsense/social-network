@@ -12,7 +12,8 @@ type contextKey string
 const userIDKey contextKey = "user_id"
 
 func UserIDFromContext(ctx context.Context) int32 {
-	return ctx.Value(userIDKey).(int32)
+	userID, _ := ctx.Value(userIDKey).(int32)
+	return userID
 }
 
 func ExtractUserID(next http.Handler) http.Handler {
